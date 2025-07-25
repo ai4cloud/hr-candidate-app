@@ -1,0 +1,377 @@
+// HR候选人简历填写系统 - Prisma Schema
+// 基于现有数据库表结构设计
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 系统字典类型表
+model SystemDictType {
+  id          BigInt   @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  type        String   @unique @db.VarChar(100)
+  status      Int      @default(0) @db.TinyInt
+  remark      String?  @db.VarChar(500)
+  creator     String   @default("") @db.VarChar(64)
+  createTime  DateTime @default(now()) @map("create_time")
+  updater     String   @default("") @db.VarChar(64)
+  updateTime  DateTime @default(now()) @updatedAt @map("update_time")
+  deleted     Boolean  @default(false) @db.Bit(1)
+  deletedTime DateTime? @map("deleted_time")
+
+  // 关联字典数据
+  dictData SystemDictData[]
+
+  @@map("system_dict_type")
+}
+
+// 系统字典数据表
+model SystemDictData {
+  id        BigInt   @id @default(autoincrement())
+  sort      Int      @default(0)
+  label     String   @db.VarChar(100)
+  value     String   @db.VarChar(100)
+  dictType  String   @map("dict_type") @db.VarChar(100)
+  status    Int      @default(0) @db.TinyInt
+  colorType String?  @map("color_type") @db.VarChar(100)
+  cssClass  String?  @map("css_class") @db.VarChar(100)
+  remark    String?  @db.VarChar(500)
+  creator   String   @default("") @db.VarChar(64)
+  createTime DateTime @default(now()) @map("create_time")
+  updater   String   @default("") @db.VarChar(64)
+  updateTime DateTime @default(now()) @updatedAt @map("update_time")
+  deleted   Boolean  @default(false) @db.Bit(1)
+
+  // 关联字典类型
+  dictTypeRef SystemDictType @relation(fields: [dictType], references: [type])
+
+  @@map("system_dict_data")
+}
+
+// 人员基本信息表 (主表)
+model HrPerson {
+  id                    BigInt    @id @default(autoincrement())
+  name                  String?   @db.VarChar(100)
+  gender                String?   @db.VarChar(10)
+  age                   Int?
+  birthDate             DateTime? @map("birth_date") @db.Date
+  idCard                String?   @map("id_card") @db.VarChar(50)
+  phone                 String?   @db.VarChar(20)
+  email                 String?   @db.VarChar(100)
+  city                  String?   @db.VarChar(20)
+  address               String?   @db.Text
+  registeredAddress     String?   @map("registered_address") @db.VarChar(500)
+  ethnicity             String?   @db.VarChar(20)
+  nationality           String?   @db.VarChar(50)
+  politicalStatus       String?   @map("political_status") @db.VarChar(100)
+  maritalStatus         String?   @map("marital_status") @db.VarChar(20)
+  school                String?   @db.VarChar(500)
+  degree                String?   @db.VarChar(50)
+  educationLevel        String?   @map("education_level") @db.VarChar(50)
+  companyName           String?   @map("company_name") @db.VarChar(200)
+  position              String?   @db.VarChar(100)
+  employmentStatus      String?   @map("employment_status") @db.VarChar(20)
+  workYear              String?   @map("work_year") @db.VarChar(20)
+  workStartDate         DateTime? @map("work_start_date") @db.Date
+  availableDate         String?   @map("available_date") @db.VarChar(100)
+  jobType               String?   @map("job_type") @db.VarChar(50)
+  avatarUrl             String?   @map("avatar_url") @db.VarChar(500)
+  idCardFrontUrl        String?   @map("id_card_front_url") @db.VarChar(500)
+  idCardBackUrl         String?   @map("id_card_back_url") @db.VarChar(500)
+  socialInsuranceUrl    String?   @map("social_insurance_url") @db.VarChar(500)
+  resumeUrl             String?   @map("resume_url") @db.VarChar(500)
+  resumeParseStatus     Int?      @map("resume_parse_status")
+  resumeParseErrorMsg   String?   @map("resume_parse_error_msg") @db.VarChar(500)
+  type                  String?   @db.VarChar(50)
+  recordStatus          String?   @map("record_status") @db.VarChar(50)
+  recordAccessToken     String?   @map("record_access_token") @db.VarChar(100)
+  tenantId              BigInt?   @map("tenant_id")
+  creator               String?   @db.VarChar(64)
+  createTime            DateTime  @default(now()) @map("create_time")
+  updater               String?   @db.VarChar(64)
+  updateTime            DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted               Boolean   @default(false) @db.Bit(1)
+
+  // 关联子表
+  educations        HrPersonEducation[]
+  workExperiences   HrPersonWork[]
+  projects          HrPersonProject[]
+  skills            HrPersonSkill[]
+  certificates      HrPersonCertificate[]
+  trainings         HrPersonTraining[]
+  languages         HrPersonLanguage[]
+  socialInsurances  HrPersonSocialInsurance[]
+  jobPreferences    HrPersonJobPref[]
+
+  @@map("hr_person")
+}
+
+// 求职期望表 (最多3条)
+model HrPersonJobPref {
+  id               BigInt    @id @default(autoincrement())
+  personId         BigInt    @map("person_id")
+  expectedPosition String?   @map("expected_position") @db.VarChar(100)
+  expectedIndustry String?   @map("expected_industry") @db.VarChar(100)
+  expectedCity     String?   @map("expected_city") @db.VarChar(50)
+  expectedSalary   String?   @map("expected_salary") @db.VarChar(100)
+  tenantId         BigInt?   @map("tenant_id")
+  creator          String?   @db.VarChar(64)
+  createTime       DateTime  @default(now()) @map("create_time")
+  updater          String?   @db.VarChar(64)
+  updateTime       DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted          Boolean   @default(false) @db.Bit(1)
+
+  // 关联主表
+  person HrPerson @relation(fields: [personId], references: [id])
+
+  @@map("hr_person_job_pref")
+}
+
+// 教育经历表
+model HrPersonEducation {
+  id                    BigInt    @id @default(autoincrement())
+  personId              BigInt    @map("person_id")
+  schoolName            String    @map("school_name") @db.VarChar(200)
+  startDate             DateTime  @map("start_date") @db.Date
+  endDate               DateTime  @map("end_date") @db.Date
+  major                 String    @db.VarChar(100)
+  educationLevel        String    @map("education_level") @db.VarChar(50)
+  degree                String    @db.VarChar(50)
+  isFullTime            Boolean   @default(true) @map("is_full_time") @db.Bit(1)
+  schoolExperience      String?   @map("school_experience") @db.VarChar(1000)
+  educationCertFile     String?   @map("education_cert_file") @db.VarChar(500)
+  educationCertNo       String?   @map("education_cert_no") @db.VarChar(100)
+  educationVerifyCode   String?   @map("education_verify_code") @db.VarChar(100)
+  educationVerifyFile   String?   @map("education_verify_file") @db.VarChar(500)
+  degreeCertFile        String?   @map("degree_cert_file") @db.VarChar(500)
+  degreeCertNo          String?   @map("degree_cert_no") @db.VarChar(100)
+  degreeVerifyCode      String?   @map("degree_verify_code") @db.VarChar(100)
+  degreeVerifyFile      String?   @map("degree_verify_file") @db.VarChar(500)
+  tenantId              BigInt?   @map("tenant_id")
+  creator               String?   @db.VarChar(64)
+  createTime            DateTime  @default(now()) @map("create_time")
+  updater               String?   @db.VarChar(64)
+  updateTime            DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted               Boolean   @default(false) @db.Bit(1)
+
+  // 关联主表
+  person HrPerson @relation(fields: [personId], references: [id])
+
+  @@map("hr_person_education")
+}
+
+// 工作经历表
+model HrPersonWork {
+  id                         BigInt    @id @default(autoincrement())
+  personId                   BigInt    @map("person_id")
+  companyName                String?   @map("company_name") @db.VarChar(200)
+  startDate                  DateTime  @map("start_date") @db.Date
+  endDate                    DateTime  @map("end_date") @db.Date
+  industry                   String?   @db.VarChar(100)
+  position                   String?   @db.VarChar(100)
+  location                   String?   @db.VarChar(100)
+  department                 String?   @db.VarChar(100)
+  responsibilityPerformance  String?   @map("responsibility_performance") @db.VarChar(1000)
+  tenantId                   BigInt?   @map("tenant_id")
+  creator                    String?   @db.VarChar(64)
+  createTime                 DateTime  @default(now()) @map("create_time")
+  updater                    String?   @db.VarChar(64)
+  updateTime                 DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted                    Boolean   @default(false) @db.Bit(1)
+
+  // 关联主表
+  person HrPerson @relation(fields: [personId], references: [id])
+
+  @@map("hr_person_work")
+}
+
+// 项目经历表
+model HrPersonProject {
+  id                    BigInt    @id @default(autoincrement())
+  personId              BigInt    @map("person_id")
+  projectName           String?   @map("project_name") @db.VarChar(200)
+  companyName           String?   @map("company_name") @db.VarChar(200)
+  startDate             DateTime  @map("start_date") @db.Date
+  endDate               DateTime  @map("end_date") @db.Date
+  technologies          String?   @db.VarChar(1000)
+  projectDesc           String?   @map("project_desc") @db.VarChar(2000)
+  projectRole           String?   @map("project_role") @db.VarChar(50)
+  projectResponsibility String?   @map("project_responsibility") @db.VarChar(1000)
+  projectAchievement    String?   @map("project_achievement") @db.VarChar(1000)
+  tenantId              BigInt?   @map("tenant_id")
+  creator               String?   @db.VarChar(64)
+  createTime            DateTime  @default(now()) @map("create_time")
+  updater               String?   @db.VarChar(64)
+  updateTime            DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted               Boolean   @default(false) @db.Bit(1)
+
+  // 关联主表
+  person HrPerson @relation(fields: [personId], references: [id])
+
+  @@map("hr_person_project")
+}
+
+// 技能特长表
+model HrPersonSkill {
+  id                 BigInt    @id @default(autoincrement())
+  personId           BigInt    @map("person_id")
+  skillId            BigInt?   @map("skill_id")
+  skillName          String?   @map("skill_name") @db.VarChar(100)
+  sourceType         String?   @map("source_type") @db.VarChar(20)
+  proficiencyLevel   String?   @map("proficiency_level") @db.VarChar(100)
+  yearsOfExperience  Int?      @map("years_of_experience")
+  tenantId           BigInt?   @map("tenant_id")
+  creator            String?   @db.VarChar(64)
+  createTime         DateTime  @default(now()) @map("create_time")
+  updater            String?   @db.VarChar(64)
+  updateTime         DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted            Boolean   @default(false) @db.Bit(1)
+
+  // 关联主表
+  person HrPerson @relation(fields: [personId], references: [id])
+
+  @@unique([personId, skillName], map: "uk_person_skill")
+  @@map("hr_person_skill")
+}
+
+// 资格证书表
+model HrPersonCertificate {
+  id              BigInt    @id @default(autoincrement())
+  personId        BigInt    @map("person_id")
+  certificateId   BigInt?   @map("certificate_id")
+  certificateName String?   @map("certificate_name") @db.VarChar(100)
+  certificateCode String?   @map("certificate_code") @db.VarChar(100)
+  issuer          String?   @db.VarChar(100)
+  issueDate       DateTime? @map("issue_date") @db.Date
+  expiryDate      DateTime? @map("expiry_date") @db.Date
+  tenantId        BigInt?   @map("tenant_id")
+  creator         String?   @db.VarChar(64)
+  createTime      DateTime  @default(now()) @map("create_time")
+  updater         String?   @db.VarChar(64)
+  updateTime      DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted         Boolean   @default(false) @db.Bit(1)
+
+  // 关联主表
+  person HrPerson @relation(fields: [personId], references: [id])
+
+  @@map("hr_person_certificate")
+}
+
+// 培训经历表
+model HrPersonTraining {
+  id              BigInt    @id @default(autoincrement())
+  personId        BigInt    @map("person_id")
+  trainingName    String?   @map("training_name") @db.VarChar(200)
+  startDate       DateTime  @map("start_date") @db.Date
+  endDate         DateTime  @map("end_date") @db.Date
+  trainingOrg     String?   @map("training_org") @db.VarChar(200)
+  trainingDesc    String?   @map("training_desc") @db.VarChar(1000)
+  certificateName String?   @map("certificate_name") @db.VarChar(100)
+  tenantId        BigInt?   @map("tenant_id")
+  creator         String?   @db.VarChar(64)
+  createTime      DateTime  @default(now()) @map("create_time")
+  updater         String?   @db.VarChar(64)
+  updateTime      DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted         Boolean   @default(false) @db.Bit(1)
+
+  // 关联主表
+  person HrPerson @relation(fields: [personId], references: [id])
+
+  @@map("hr_person_training")
+}
+
+// 语言能力表
+model HrPersonLanguage {
+  id               BigInt    @id @default(autoincrement())
+  personId         BigInt    @map("person_id")
+  languageName     String?   @map("language_name") @db.VarChar(100)
+  proficiencyLevel String?   @map("proficiency_level") @db.VarChar(50)
+  tenantId         BigInt?   @map("tenant_id")
+  creator          String?   @db.VarChar(64)
+  createTime       DateTime  @default(now()) @map("create_time")
+  updater          String?   @db.VarChar(64)
+  updateTime       DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted          Boolean   @default(false) @db.Bit(1)
+
+  // 关联主表
+  person HrPerson @relation(fields: [personId], references: [id])
+
+  @@map("hr_person_language")
+}
+
+// 社保记录表
+model HrPersonSocialInsurance {
+  id          BigInt    @id @default(autoincrement())
+  personId    BigInt    @map("person_id")
+  startDate   DateTime  @map("start_date") @db.Date
+  endDate     DateTime  @map("end_date") @db.Date
+  city        String?   @db.VarChar(50)
+  companyName String?   @map("company_name") @db.VarChar(100)
+  tenantId    BigInt?   @map("tenant_id")
+  creator     String?   @db.VarChar(64)
+  createTime  DateTime  @default(now()) @map("create_time")
+  updater     String?   @db.VarChar(64)
+  updateTime  DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted     Boolean   @default(false) @db.Bit(1)
+
+  // 关联主表
+  person HrPerson @relation(fields: [personId], references: [id])
+
+  @@map("hr_person_social_insurance")
+}
+
+// 技能目录表
+model HrSkillCatalog {
+  id          BigInt    @id @default(autoincrement())
+  code        String    @unique @db.VarChar(100)
+  name        String    @db.VarChar(200)
+  category    String    @db.VarChar(100)
+  description String?   @db.VarChar(500)
+  tenantId    BigInt?   @map("tenant_id")
+  creator     String?   @db.VarChar(64)
+  createTime  DateTime  @default(now()) @map("create_time")
+  updater     String?   @db.VarChar(64)
+  updateTime  DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted     Boolean   @default(false) @db.Bit(1)
+
+  @@map("hr_skill_catalog")
+}
+
+// 证书目录表
+model HrCertificateCatalog {
+  id          BigInt    @id @default(autoincrement())
+  name        String    @db.VarChar(200)
+  category    String    @db.VarChar(100)
+  description String?   @db.VarChar(500)
+  tenantId    BigInt?   @map("tenant_id")
+  creator     String?   @db.VarChar(64)
+  createTime  DateTime  @default(now()) @map("create_time")
+  updater     String?   @db.VarChar(64)
+  updateTime  DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted     Boolean   @default(false) @db.Bit(1)
+
+  @@map("hr_certificate_catalog")
+}
+
+// 重点大学表
+model HrKeyUniversity {
+  id          BigInt    @id @default(autoincrement())
+  name        String    @db.VarChar(200)
+  location    String    @db.VarChar(100)
+  level       String    @db.VarChar(50)
+  description String?   @db.VarChar(500)
+  tenantId    BigInt?   @map("tenant_id")
+  creator     String?   @db.VarChar(64)
+  createTime  DateTime  @default(now()) @map("create_time")
+  updater     String?   @db.VarChar(64)
+  updateTime  DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted     Boolean   @default(false) @db.Bit(1)
+
+  @@map("hr_key_university")
+}
