@@ -508,9 +508,9 @@ export default function FormPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 顶部导航栏 */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      {/* 顶部导航栏 - 固定在顶部 */}
+      <div className="fixed top-0 left-0 right-0 bg-white shadow-sm border-b z-30">
+        <div className="px-4 py-4 pl-72">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">简历信息填写</h1>
             <div className="text-sm text-gray-500">
@@ -522,52 +522,61 @@ export default function FormPage() {
         </div>
       </div>
 
-      {/* 步骤导航 - 固定在顶部 */}
-      <div className="sticky top-0 z-10 bg-white border-b shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-3">
-          <div className="flex items-center space-x-3 overflow-x-auto">
+      {/* 左侧步骤导航 - 固定侧边栏 */}
+      <div className="fixed left-0 top-0 h-full w-64 bg-white border-r shadow-lg z-20 overflow-y-auto">
+        <div className="p-4 pt-20">
+          <h2 className="text-base font-semibold text-gray-900 mb-4">填写步骤</h2>
+          <nav className="space-y-1">
             {STEPS.map((step, index) => (
               <button
                 key={step.id}
                 onClick={() => handleStepChange(index)}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg whitespace-nowrap transition-all duration-200 ${
+                className={`w-full flex items-center space-x-2 px-3 py-2 rounded-md text-left transition-all duration-200 ${
                   index === currentStep
-                    ? 'bg-blue-600 text-white shadow-md scale-105'
+                    ? 'bg-blue-600 text-white shadow-md'
                     : index < currentStep
-                    ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200'
-                    : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                    ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
+                    : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
                 }`}
               >
-                <span className="text-base">{step.icon}</span>
-                <span className="text-sm font-medium">{step.title}</span>
+                <span className="text-lg flex-shrink-0">{step.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm truncate">{step.title}</div>
+                  <div className="text-xs opacity-75">
+                    步骤 {index + 1} / {STEPS.length}
+                  </div>
+                </div>
                 {index < currentStep && (
-                  <span className="text-green-600 font-bold">✓</span>
+                  <span className="text-green-600 font-bold text-base flex-shrink-0">✓</span>
+                )}
+                {index === currentStep && (
+                  <span className="text-white font-bold text-base flex-shrink-0">●</span>
                 )}
               </button>
             ))}
-          </div>
+          </nav>
         </div>
       </div>
 
       {/* 主要内容区域 */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
-
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <span className="text-2xl mr-3">{STEPS[currentStep].icon}</span>
-                  {STEPS[currentStep].title}
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  步骤 {currentStep + 1} / {STEPS.length}
-                </p>
+      <div className="ml-64 px-6 py-6 pt-24">
+        <div className="max-w-5xl">
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <span className="text-2xl mr-3">{STEPS[currentStep].icon}</span>
+                    {STEPS[currentStep].title}
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    步骤 {currentStep + 1} / {STEPS.length}
+                  </p>
+                </div>
+                {/* 添加按钮区域 - 根据当前步骤显示对应的添加按钮 */}
+                {renderAddButton()}
               </div>
-              {/* 添加按钮区域 - 根据当前步骤显示对应的添加按钮 */}
-              {renderAddButton()}
             </div>
-          </div>
 
           {/* 步骤内容 */}
           <div className="min-h-96">
@@ -632,6 +641,7 @@ export default function FormPage() {
                 </button>
               )}
             </div>
+          </div>
           </div>
         </div>
       </div>
