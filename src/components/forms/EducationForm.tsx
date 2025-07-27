@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, GraduationCap, Calendar, FileText, Upload } from 'lucide-react'
+import { Plus, Trash2, GraduationCap, Calendar, FileText, Upload, Eye, Download } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import FileUpload from '@/components/FileUpload'
 
 // 教育经历数据类型 - 基于数据库表结构
 interface EducationData {
@@ -28,6 +29,55 @@ interface EducationData {
 interface EducationFormProps {
   data: EducationData[]
   onChange: (data: EducationData[]) => void
+}
+
+// 文件预览组件
+function FilePreview({ fileUrl, fileName }: { fileUrl: string; fileName?: string }) {
+  if (!fileUrl) return null
+
+  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(fileUrl)
+  const displayName = fileName || fileUrl.split('/').pop() || '文件'
+
+  return (
+    <div className="mt-2 p-3 bg-gray-50 rounded-lg border">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <FileText className="h-4 w-4 text-gray-500" />
+          <span className="text-sm text-gray-700 truncate">{displayName}</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          {isImage && (
+            <button
+              type="button"
+              onClick={() => window.open(fileUrl, '_blank')}
+              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+              title="预览图片"
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => window.open(fileUrl, '_blank')}
+            className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+            title="下载文件"
+          >
+            <Download className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {isImage && (
+        <div className="mt-2">
+          <img
+            src={fileUrl}
+            alt="预览"
+            className="max-w-full h-32 object-contain rounded border"
+          />
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function EducationForm({ data, onChange }: EducationFormProps) {
@@ -456,6 +506,80 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="请描述在校期间的学习成绩、获奖情况、社团活动等"
                     />
+                  </div>
+
+                  {/* 证书文件上传区域 */}
+                  <div className="md:col-span-2">
+                    <h4 className="text-sm font-medium text-gray-900 mb-4 flex items-center">
+                      <FileText className="h-4 w-4 mr-2" />
+                      证书文件
+                    </h4>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* 学历证文件 */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          学历证文件
+                        </label>
+                        <FileUpload
+                          onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'educationCertFile', fileUrl)}
+                          directory="education-certs"
+                          accept="image/*,.pdf,.doc,.docx"
+                          maxSize={10}
+                          placeholder="上传学历证文件"
+                          currentFile={education.educationCertFile}
+                        />
+                        <FilePreview fileUrl={education.educationCertFile || ''} />
+                      </div>
+
+                      {/* 学历证书电子注册备案表 */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          学历证书电子注册备案表
+                        </label>
+                        <FileUpload
+                          onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'educationVerifyFile', fileUrl)}
+                          directory="education-verify"
+                          accept="image/*,.pdf,.doc,.docx"
+                          maxSize={10}
+                          placeholder="上传备案表文件"
+                          currentFile={education.educationVerifyFile}
+                        />
+                        <FilePreview fileUrl={education.educationVerifyFile || ''} />
+                      </div>
+
+                      {/* 学位证文件 */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          学位证文件
+                        </label>
+                        <FileUpload
+                          onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'degreeCertFile', fileUrl)}
+                          directory="degree-certs"
+                          accept="image/*,.pdf,.doc,.docx"
+                          maxSize={10}
+                          placeholder="上传学位证文件"
+                          currentFile={education.degreeCertFile}
+                        />
+                        <FilePreview fileUrl={education.degreeCertFile || ''} />
+                      </div>
+
+                      {/* 学位在线验证报告 */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          学位在线验证报告
+                        </label>
+                        <FileUpload
+                          onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'degreeVerifyFile', fileUrl)}
+                          directory="degree-verify"
+                          accept="image/*,.pdf,.doc,.docx"
+                          maxSize={10}
+                          placeholder="上传验证报告"
+                          currentFile={education.degreeVerifyFile}
+                        />
+                        <FilePreview fileUrl={education.degreeVerifyFile || ''} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

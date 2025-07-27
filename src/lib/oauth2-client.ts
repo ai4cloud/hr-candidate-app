@@ -134,9 +134,25 @@ class OAuth2Client {
   }
 
   /**
+   * 清除token缓存
+   */
+  private clearTokenCache(): void {
+    this.cachedToken = null
+    this.tokenExpiresAt = 0
+    console.log('已清除OAuth2 token缓存')
+  }
+
+  /**
    * 上传文件到管理端
    */
   async uploadFile(file: File, directory?: string): Promise<string> {
+    return this.uploadFileWithRetry(file, directory, false)
+  }
+
+  /**
+   * 上传文件到管理端（支持重试）
+   */
+  private async uploadFileWithRetry(file: File, directory?: string, isRetry: boolean = false): Promise<string> {
     try {
       const accessToken = await this.getAccessToken()
 
@@ -150,7 +166,8 @@ class OAuth2Client {
         filename: file.name,
         size: file.size,
         type: file.type,
-        directory: directory || 'default'
+        directory: directory || 'default',
+        isRetry
       })
 
       const response = await fetch(this.fileUploadUrl, {
@@ -177,6 +194,12 @@ class OAuth2Client {
       console.log('文件上传响应:', result)
 
       if (result.code !== 0) {
+        // 如果是认证失败且还没重试过，清除token缓存并重试
+        if ((result.code === 401 || result.msg?.includes('未登录') || result.msg?.includes('认证')) && !isRetry) {
+          console.log('检测到认证失败，清除token缓存并重试...')
+          this.clearTokenCache()
+          return this.uploadFileWithRetry(file, directory, true)
+        }
         throw new Error(`文件上传失败: ${result.msg || '未知错误'}`)
       }
 
