@@ -32,7 +32,17 @@ interface EducationFormProps {
 }
 
 // 文件预览组件
-function FilePreview({ fileUrl, fileName }: { fileUrl: string; fileName?: string }) {
+function FilePreview({
+  fileUrl,
+  fileName,
+  onDelete,
+  onReupload
+}: {
+  fileUrl: string;
+  fileName?: string;
+  onDelete: () => void;
+  onReupload: () => void;
+}) {
   if (!fileUrl) return null
 
   const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(fileUrl)
@@ -41,38 +51,67 @@ function FilePreview({ fileUrl, fileName }: { fileUrl: string; fileName?: string
   return (
     <div className="mt-2 p-3 bg-gray-50 rounded-lg border">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <FileText className="h-4 w-4 text-gray-500" />
+        <div className="flex items-center space-x-2 flex-1 min-w-0">
+          <FileText className="h-4 w-4 text-gray-500 flex-shrink-0" />
           <span className="text-sm text-gray-700 truncate">{displayName}</span>
         </div>
-        <div className="flex items-center space-x-2">
-          {isImage && (
-            <button
-              type="button"
-              onClick={() => window.open(fileUrl, '_blank')}
-              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-              title="预览图片"
-            >
-              <Eye className="h-4 w-4" />
-            </button>
-          )}
+        <div className="flex items-center space-x-1 ml-2">
+          {/* 预览按钮 */}
           <button
             type="button"
             onClick={() => window.open(fileUrl, '_blank')}
-            className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+            title={isImage ? "预览图片" : "查看文件"}
+          >
+            <Eye className="h-4 w-4" />
+          </button>
+
+          {/* 下载按钮 */}
+          <button
+            type="button"
+            onClick={() => {
+              const link = document.createElement('a')
+              link.href = fileUrl
+              link.download = displayName
+              link.target = '_blank'
+              document.body.appendChild(link)
+              link.click()
+              document.body.removeChild(link)
+            }}
+            className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
             title="下载文件"
           >
             <Download className="h-4 w-4" />
+          </button>
+
+          {/* 重新上传按钮 */}
+          <button
+            type="button"
+            onClick={onReupload}
+            className="p-1.5 text-orange-600 hover:bg-orange-50 rounded transition-colors"
+            title="重新上传"
+          >
+            <Upload className="h-4 w-4" />
+          </button>
+
+          {/* 删除按钮 */}
+          <button
+            type="button"
+            onClick={onDelete}
+            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+            title="删除文件"
+          >
+            <Trash2 className="h-4 w-4" />
           </button>
         </div>
       </div>
 
       {isImage && (
-        <div className="mt-2">
+        <div className="mt-3">
           <img
             src={fileUrl}
             alt="预览"
-            className="max-w-full h-32 object-contain rounded border"
+            className="max-w-full h-32 object-contain rounded border bg-white"
           />
         </div>
       )}
@@ -81,6 +120,38 @@ function FilePreview({ fileUrl, fileName }: { fileUrl: string; fileName?: string
 }
 
 export default function EducationForm({ data, onChange }: EducationFormProps) {
+  // 文件上传处理函数
+  const handleFileUpload = (index: number, field: string, directory: string) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*,.pdf,.doc,.docx'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        try {
+          // 使用现有的上传API
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('directory', directory)
+
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          })
+
+          const result = await response.json()
+          if (result.success && result.data?.fileUrl) {
+            updateEducation(index, field, result.data.fileUrl)
+          } else {
+            console.error('文件上传失败:', result.error || result.message || '未知错误')
+          }
+        } catch (error) {
+          console.error('文件上传失败:', error)
+        }
+      }
+    }
+    input.click()
+  }
   const [educations, setEducations] = useState<EducationData[]>(data || [])
   const [errors, setErrors] = useState<Record<string, Record<string, string>>>({})
   const [dictData, setDictData] = useState<Record<string, Array<{ label: string; value: string }>>>({})
@@ -521,15 +592,22 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           学历证文件
                         </label>
-                        <FileUpload
-                          onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'educationCertFile', fileUrl)}
-                          directory="education-certs"
-                          accept="image/*,.pdf,.doc,.docx"
-                          maxSize={10}
-                          placeholder="上传学历证文件"
-                          currentFile={education.educationCertFile}
-                        />
-                        <FilePreview fileUrl={education.educationCertFile || ''} />
+                        {!education.educationCertFile ? (
+                          <FileUpload
+                            onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'educationCertFile', fileUrl)}
+                            directory="education-certs"
+                            accept="image/*,.pdf,.doc,.docx"
+                            maxSize={10}
+                            placeholder="上传学历证文件"
+                            currentFile={education.educationCertFile}
+                          />
+                        ) : (
+                          <FilePreview
+                            fileUrl={education.educationCertFile}
+                            onDelete={() => updateEducation(index, 'educationCertFile', '')}
+                            onReupload={() => handleFileUpload(index, 'educationCertFile', 'education-certs')}
+                          />
+                        )}
                       </div>
 
                       {/* 学历证书电子注册备案表 */}
@@ -537,15 +615,22 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           学历证书电子注册备案表
                         </label>
-                        <FileUpload
-                          onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'educationVerifyFile', fileUrl)}
-                          directory="education-verify"
-                          accept="image/*,.pdf,.doc,.docx"
-                          maxSize={10}
-                          placeholder="上传备案表文件"
-                          currentFile={education.educationVerifyFile}
-                        />
-                        <FilePreview fileUrl={education.educationVerifyFile || ''} />
+                        {!education.educationVerifyFile ? (
+                          <FileUpload
+                            onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'educationVerifyFile', fileUrl)}
+                            directory="education-verify"
+                            accept="image/*,.pdf,.doc,.docx"
+                            maxSize={10}
+                            placeholder="上传备案表文件"
+                            currentFile={education.educationVerifyFile}
+                          />
+                        ) : (
+                          <FilePreview
+                            fileUrl={education.educationVerifyFile}
+                            onDelete={() => updateEducation(index, 'educationVerifyFile', '')}
+                            onReupload={() => handleFileUpload(index, 'educationVerifyFile', 'education-verify')}
+                          />
+                        )}
                       </div>
 
                       {/* 学位证文件 */}
@@ -553,15 +638,22 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           学位证文件
                         </label>
-                        <FileUpload
-                          onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'degreeCertFile', fileUrl)}
-                          directory="degree-certs"
-                          accept="image/*,.pdf,.doc,.docx"
-                          maxSize={10}
-                          placeholder="上传学位证文件"
-                          currentFile={education.degreeCertFile}
-                        />
-                        <FilePreview fileUrl={education.degreeCertFile || ''} />
+                        {!education.degreeCertFile ? (
+                          <FileUpload
+                            onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'degreeCertFile', fileUrl)}
+                            directory="degree-certs"
+                            accept="image/*,.pdf,.doc,.docx"
+                            maxSize={10}
+                            placeholder="上传学位证文件"
+                            currentFile={education.degreeCertFile}
+                          />
+                        ) : (
+                          <FilePreview
+                            fileUrl={education.degreeCertFile}
+                            onDelete={() => updateEducation(index, 'degreeCertFile', '')}
+                            onReupload={() => handleFileUpload(index, 'degreeCertFile', 'degree-certs')}
+                          />
+                        )}
                       </div>
 
                       {/* 学位在线验证报告 */}
@@ -569,15 +661,22 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           学位在线验证报告
                         </label>
-                        <FileUpload
-                          onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'degreeVerifyFile', fileUrl)}
-                          directory="degree-verify"
-                          accept="image/*,.pdf,.doc,.docx"
-                          maxSize={10}
-                          placeholder="上传验证报告"
-                          currentFile={education.degreeVerifyFile}
-                        />
-                        <FilePreview fileUrl={education.degreeVerifyFile || ''} />
+                        {!education.degreeVerifyFile ? (
+                          <FileUpload
+                            onFileUploaded={(fileUrl, fileName) => updateEducation(index, 'degreeVerifyFile', fileUrl)}
+                            directory="degree-verify"
+                            accept="image/*,.pdf,.doc,.docx"
+                            maxSize={10}
+                            placeholder="上传验证报告"
+                            currentFile={education.degreeVerifyFile}
+                          />
+                        ) : (
+                          <FilePreview
+                            fileUrl={education.degreeVerifyFile}
+                            onDelete={() => updateEducation(index, 'degreeVerifyFile', '')}
+                            onReupload={() => handleFileUpload(index, 'degreeVerifyFile', 'degree-verify')}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
