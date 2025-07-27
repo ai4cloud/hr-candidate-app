@@ -11,6 +11,8 @@ interface FileUploadProps {
   className?: string
   placeholder?: string
   currentFile?: string
+  variant?: 'default' | 'compact' // 样式变体
+  hideFileInfo?: boolean // 是否隐藏文件信息（仅在compact模式下有效）
 }
 
 interface UploadedFile {
@@ -27,7 +29,9 @@ export default function FileUpload({
   maxSize = 10,
   className = '',
   placeholder = '点击上传文件',
-  currentFile
+  currentFile,
+  variant = 'default',
+  hideFileInfo = false
 }: FileUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null)
@@ -138,38 +142,70 @@ export default function FileUpload({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      {!uploadedFile ? (
-        <div
-          className={`
-            border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer
-            hover:border-blue-400 hover:bg-blue-50 transition-colors
-            ${uploading ? 'opacity-50 cursor-not-allowed' : ''}
-          `}
-          onClick={() => !uploading && fileInputRef.current?.click()}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            accept={accept}
-            onChange={handleFileSelect}
+      {!uploadedFile || (variant === 'compact' && hideFileInfo) ? (
+        variant === 'compact' ? (
+          // 紧凑样式 - 用于头像上传
+          <button
+            type="button"
+            className={`
+              flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700
+              hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+              ${uploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+            `}
+            onClick={() => !uploading && fileInputRef.current?.click()}
             disabled={uploading}
-          />
-          
-          <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-          
-          {uploading ? (
-            <p className="text-sm text-gray-600">正在上传...</p>
-          ) : (
-            <>
-              <p className="text-sm text-gray-600 mb-1">{placeholder}</p>
-              <p className="text-xs text-gray-400">
-                {accept && `支持格式: ${accept}`}
-                {maxSize && ` • 最大 ${maxSize}MB`}
-              </p>
-            </>
-          )}
-        </div>
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept={accept}
+              onChange={handleFileSelect}
+              disabled={uploading}
+            />
+
+            <Upload className="h-4 w-4" />
+
+            {uploading ? (
+              <span>正在上传...</span>
+            ) : (
+              <span>{placeholder}</span>
+            )}
+          </button>
+        ) : (
+          // 默认样式 - 用于其他文件上传
+          <div
+            className={`
+              border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer
+              hover:border-blue-400 hover:bg-blue-50 transition-colors
+              ${uploading ? 'opacity-50 cursor-not-allowed' : ''}
+            `}
+            onClick={() => !uploading && fileInputRef.current?.click()}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept={accept}
+              onChange={handleFileSelect}
+              disabled={uploading}
+            />
+
+            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+
+            {uploading ? (
+              <p className="text-sm text-gray-600">正在上传...</p>
+            ) : (
+              <>
+                <p className="text-sm text-gray-600 mb-1">{placeholder}</p>
+                <p className="text-xs text-gray-400">
+                  {accept && `支持格式: ${accept}`}
+                  {maxSize && ` • 最大 ${maxSize}MB`}
+                </p>
+              </>
+            )}
+          </div>
+        )
       ) : (
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
           <div className="flex items-center space-x-3">

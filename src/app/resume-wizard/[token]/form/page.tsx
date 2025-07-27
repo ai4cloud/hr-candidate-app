@@ -105,6 +105,7 @@ export default function FormPage() {
             availableDate: result.data.person.availableDate || '',
             address: result.data.person.address || '',
             registeredAddress: result.data.person.registeredAddress || '',
+            avatarUrl: result.data.person.avatarUrl || '',
             // 工作相关字段
             employmentStatus: result.data.person.employmentStatus || '',
             workYear: result.data.person.workYear || '',

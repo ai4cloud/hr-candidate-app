@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import CitySelector from '@/components/ui/CitySelector'
+import FileUpload from '@/components/FileUpload'
+import { User } from 'lucide-react'
 
 // 基本信息数据类型
 interface BasicInfoData {
@@ -21,6 +23,7 @@ interface BasicInfoData {
   maritalStatus: string
   jobType: string
   availableDate: string
+  avatarUrl: string
 
   // 工作相关字段
   employmentStatus: string
@@ -159,46 +162,80 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
     )
   }
 
+  // 处理头像上传
+  const handleAvatarUpload = (fileUrl: string, fileName: string) => {
+    handleChange('avatarUrl', fileUrl)
+  }
+
   return (
     <div className="space-y-6">
-      {/* 基本信息 - 按新顺序排列 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* 头像和基本信息第一行 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        {/* 头像上传区域 */}
+        <div className="flex items-center space-x-4">
+          {/* 头像预览 */}
+          <div className="flex-shrink-0">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-gray-200">
+              {formData.avatarUrl ? (
+                <img
+                  src={formData.avatarUrl}
+                  alt="头像预览"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="h-10 w-10 text-gray-400" />
+              )}
+            </div>
+          </div>
+
+          {/* 上传按钮 */}
+          <div className="flex-1">
+            <FileUpload
+              onFileUploaded={handleAvatarUpload}
+              directory="avatars"
+              accept="image/*"
+              maxSize={5}
+              placeholder="上传头像"
+              currentFile={formData.avatarUrl}
+              variant="compact"
+              hideFileInfo={true}
+            />
+          </div>
+        </div>
+
         {/* 姓名 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             姓名 <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
-            value={formData.name || ''}
+            value={formData.name}
             onChange={(e) => handleChange('name', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.name ? 'border-red-500' : 'border-gray-300'
-            }`}
             placeholder="请输入姓名"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
-          {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
         </div>
 
         {/* 性别 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             性别 <span className="text-red-500">*</span>
           </label>
           <select
-            value={formData.gender || ''}
+            value={formData.gender}
             onChange={(e) => handleChange('gender', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.gender ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">请选择性别</option>
-            {genderOptions.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
+            <option value="男">男</option>
+            <option value="女">女</option>
           </select>
-          {errors.gender && <p className="mt-1 text-sm text-red-500">{errors.gender}</p>}
         </div>
+      </div>
+
+      {/* 基本信息 - 按新顺序排列 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* 出生日期 */}
         <div>
