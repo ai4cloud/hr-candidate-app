@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import CitySelector from '@/components/ui/CitySelector'
 
 // 基本信息数据类型
 interface BasicInfoData {
@@ -20,6 +21,11 @@ interface BasicInfoData {
   maritalStatus: string
   jobType: string
   availableDate: string
+
+  // 工作相关字段
+  employmentStatus: string
+  workYear: string
+  workStartDate: string
 }
 
 interface BasicInfoFormProps {
@@ -32,6 +38,7 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [dictData, setDictData] = useState<Record<string, Array<{ label: string; value: string }>>>({})
   const [loading, setLoading] = useState(true)
+  const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false)
 
   // 固定的性别选项
   const genderOptions = [
@@ -54,7 +61,7 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            types: ['ethnicity', 'nationality', 'political_status', 'marital_status', 'job_type']
+            types: ['ethnicity', 'nationality', 'political_status', 'marital_status', 'job_type', 'employment_status']
           }),
         })
 
@@ -154,7 +161,7 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* 基本信息 */}
+      {/* 基本信息 - 按新顺序排列 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 姓名 */}
         <div>
@@ -206,20 +213,21 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
           />
         </div>
 
-        {/* 年龄 */}
+        {/* 身份证号 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            年龄
+            身份证号
           </label>
           <input
-            type="number"
-            value={formData.age || ''}
-            onChange={(e) => handleChange('age', e.target.value ? parseInt(e.target.value) : null)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="自动计算或手动输入"
-            min="0"
-            max="100"
+            type="text"
+            value={formData.idCard || ''}
+            onChange={(e) => handleChange('idCard', e.target.value)}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.idCard ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="请输入身份证号"
           />
+          {errors.idCard && <p className="mt-1 text-sm text-red-500">{errors.idCard}</p>}
         </div>
 
         {/* 手机号 */}
@@ -255,151 +263,146 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
           />
           {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
         </div>
-      </div>
 
-      {/* 身份信息 */}
-      <div className="border-t pt-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">身份信息</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* 身份证号 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              身份证号
-            </label>
-            <input
-              type="text"
-              value={formData.idCard || ''}
-              onChange={(e) => handleChange('idCard', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.idCard ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="请输入身份证号"
-            />
-            {errors.idCard && <p className="mt-1 text-sm text-red-500">{errors.idCard}</p>}
-          </div>
-
-          {/* 民族 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              民族
-            </label>
-            <select
-              value={formData.ethnicity || ''}
-              onChange={(e) => handleChange('ethnicity', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">请选择民族</option>
-              {(dictData.ethnicity || []).map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* 国籍 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              国籍
-            </label>
-            <select
-              value={formData.nationality || ''}
-              onChange={(e) => handleChange('nationality', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">请选择国籍</option>
-              {(dictData.nationality || []).map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* 政治面貌 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              政治面貌
-            </label>
-            <select
-              value={formData.politicalStatus || ''}
-              onChange={(e) => handleChange('politicalStatus', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">请选择政治面貌</option>
-              {(dictData.political_status || []).map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* 婚姻状况 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              婚姻状况
-            </label>
-            <select
-              value={formData.maritalStatus || ''}
-              onChange={(e) => handleChange('maritalStatus', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">请选择婚姻状况</option>
-              {(dictData.marital_status || []).map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
+        {/* 民族 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            民族
+          </label>
+          <select
+            value={formData.ethnicity || ''}
+            onChange={(e) => handleChange('ethnicity', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">请选择民族</option>
+            {(dictData.ethnicity || []).map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
         </div>
-      </div>
 
-      {/* 地址信息 */}
-      <div className="border-t pt-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">地址信息</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* 现居城市 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              现居城市
-            </label>
+        {/* 国籍 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            国籍
+          </label>
+          <select
+            value={formData.nationality || ''}
+            onChange={(e) => handleChange('nationality', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">请选择国籍</option>
+            {(dictData.nationality || []).map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* 政治面貌 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            政治面貌
+          </label>
+          <select
+            value={formData.politicalStatus || ''}
+            onChange={(e) => handleChange('politicalStatus', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">请选择政治面貌</option>
+            {(dictData.political_status || []).map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* 婚姻状况 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            婚姻状况
+          </label>
+          <select
+            value={formData.maritalStatus || ''}
+            onChange={(e) => handleChange('maritalStatus', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">请选择婚姻状况</option>
+            {(dictData.marital_status || []).map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* 现居城市 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            现居城市
+          </label>
+          <div className="relative">
             <input
               type="text"
               value={formData.city || ''}
-              onChange={(e) => handleChange('city', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="请输入现居城市"
+              onClick={() => setIsCitySelectorOpen(true)}
+              readOnly
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bg-white"
+              placeholder="请选择现居城市"
             />
-          </div>
-
-          {/* 求职类型 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              求职类型
-            </label>
-            <select
-              value={formData.jobType || ''}
-              onChange={(e) => handleChange('jobType', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">请选择求职类型</option>
-              {(dictData.job_type || []).map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* 可入职时间 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              可入职时间
-            </label>
-            <input
-              type="text"
-              value={formData.availableDate || ''}
-              onChange={(e) => handleChange('availableDate', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="如：随时、一个月内、三个月内等"
-            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
         </div>
 
+        {/* 参加工作时间 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            参加工作时间
+          </label>
+          <input
+            type="date"
+            value={formData.workStartDate || ''}
+            onChange={(e) => handleChange('workStartDate', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* 在职状态 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            在职状态
+          </label>
+          <select
+            value={formData.employmentStatus || ''}
+            onChange={(e) => handleChange('employmentStatus', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">请选择在职状态</option>
+            {(dictData.employment_status || []).map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* 求职类型 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            求职类型
+          </label>
+          <select
+            value={formData.jobType || ''}
+            onChange={(e) => handleChange('jobType', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">请选择求职类型</option>
+            {(dictData.job_type || []).map(option => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </div>
+
         {/* 现居地址 */}
-        <div className="mt-6">
+        <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             现居地址
           </label>
@@ -413,7 +416,7 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
         </div>
 
         {/* 户籍地址 */}
-        <div className="mt-6">
+        <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             户籍地址
           </label>
@@ -427,8 +430,17 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
         </div>
       </div>
 
+
+
       {/* 保存按钮 */}
 
+      {/* 城市选择器 */}
+      <CitySelector
+        value={formData.city || ''}
+        onChange={(city) => handleChange('city', city)}
+        onClose={() => setIsCitySelectorOpen(false)}
+        isOpen={isCitySelectorOpen}
+      />
     </div>
   )
 }

@@ -43,6 +43,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// 硬编码的字典数据（已移除employment_status，改为从数据库获取）
+const HARDCODED_DICT_DATA = {
+  // employment_status 现在从数据库获取，与初始化数据保持一致
+}
+
 // 获取多个字典类型的数据
 export async function POST(request: NextRequest) {
   try {
@@ -55,38 +60,51 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 查询多个字典类型的数据
-    const dictData = await prisma.systemDictData.findMany({
-      where: {
-        dictType: {
-          in: types
-        },
-        deleted: false
-      },
-      orderBy: [
-        { dictType: 'asc' },
-        { sort: 'asc' }
-      ],
-      select: {
-        label: true,
-        value: true,
-        dictType: true,
-        sort: true
-      }
-    })
+    // 初始化结果对象
+    const groupedData: Record<string, Array<{ label: string; value: string; sort: number }>> = {}
 
-    // 按字典类型分组
-    const groupedData = dictData.reduce((acc, item) => {
-      if (!acc[item.dictType]) {
-        acc[item.dictType] = []
+    // 先添加硬编码数据
+    for (const type of types) {
+      if (HARDCODED_DICT_DATA[type as keyof typeof HARDCODED_DICT_DATA]) {
+        groupedData[type] = HARDCODED_DICT_DATA[type as keyof typeof HARDCODED_DICT_DATA]
       }
-      acc[item.dictType].push({
-        label: item.label,
-        value: item.value,
-        sort: item.sort
+    }
+
+    // 查询数据库中的字典数据（排除已有硬编码数据的类型）
+    const dbTypes = types.filter(type => !HARDCODED_DICT_DATA[type as keyof typeof HARDCODED_DICT_DATA])
+
+    if (dbTypes.length > 0) {
+      const dictData = await prisma.systemDictData.findMany({
+        where: {
+          dictType: {
+            in: dbTypes
+          },
+          deleted: false
+        },
+        orderBy: [
+          { dictType: 'asc' },
+          { sort: 'asc' }
+        ],
+        select: {
+          label: true,
+          value: true,
+          dictType: true,
+          sort: true
+        }
       })
-      return acc
-    }, {} as Record<string, Array<{ label: string; value: string; sort: number }>>)
+
+      // 按字典类型分组数据库数据
+      dictData.forEach(item => {
+        if (!groupedData[item.dictType]) {
+          groupedData[item.dictType] = []
+        }
+        groupedData[item.dictType].push({
+          label: item.label,
+          value: item.value,
+          sort: item.sort
+        })
+      })
+    }
 
     return NextResponse.json({
       success: true,

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   }
 
   const key = process.env.ACCESS_TOKEN_AES_KEY || 'yudao-hr-aes-key'
-  const results: any[] = []
+  const results: Array<{ method: string; result?: string; error?: string }> = []
 
   // 尝试不同的解密方式
   const methods = [
@@ -43,7 +43,8 @@ export async function GET(request: NextRequest) {
     {
       name: 'Hex解码后AES解密',
       decrypt: () => {
-        const bytes = CryptoJS.AES.decrypt(CryptoJS.enc.Hex.parse(token), key)
+        const hexParsed = CryptoJS.enc.Hex.parse(token)
+        const bytes = CryptoJS.AES.decrypt(hexParsed.toString(), key)
         return bytes.toString(CryptoJS.enc.Utf8)
       }
     }

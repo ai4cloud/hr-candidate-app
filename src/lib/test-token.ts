@@ -23,7 +23,13 @@ export function generateTestToken(personId: number, mobile: string, hoursValid: 
   // AES加密
   const encrypted = CryptoJS.AES.encrypt(jsonString, key).toString()
 
-  return encrypted
+  // 转换为URL安全的Base64编码
+  const urlSafeToken = encrypted
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '')
+
+  return urlSafeToken
 }
 
 /**

@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import BasicInfoForm from '@/components/forms/BasicInfoForm'
+import JobExpectationForm from '@/components/forms/JobExpectationForm'
+import EducationForm from '@/components/forms/EducationForm'
+import WorkExperienceForm from '@/components/forms/WorkExperienceForm'
+import ProjectExperienceForm from '@/components/forms/ProjectExperienceForm'
 
 // 步骤定义
 const STEPS = [
@@ -14,8 +18,7 @@ const STEPS = [
   { id: 'skills', title: '技能特长', icon: '⚡' },
   { id: 'certificates', title: '资格证书', icon: '🏆' },
   { id: 'training', title: '培训经历', icon: '📚' },
-  { id: 'languages', title: '语言能力', icon: '🌍' },
-  { id: 'social-insurance', title: '社保记录', icon: '🛡️' }
+  { id: 'languages', title: '语言能力', icon: '🌍' }
 ]
 
 export default function FormPage() {
@@ -35,9 +38,9 @@ export default function FormPage() {
   const [certificates, setCertificates] = useState([])
   const [trainings, setTrainings] = useState([])
   const [languages, setLanguages] = useState([])
-  const [socialInsurances, setSocialInsurances] = useState([])
-  const [personData, setPersonData] = useState<any>(null)
+  const [, setPersonData] = useState<Record<string, unknown> | null>(null)
   const [saving, setSaving] = useState(false)
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const params = useParams()
   const router = useRouter()
@@ -97,11 +100,15 @@ export default function FormPage() {
             nationality: result.data.person.nationality || '',
             politicalStatus: result.data.person.politicalStatus || '',
             maritalStatus: result.data.person.maritalStatus || '',
-            currentCity: result.data.person.currentCity || '',
+            city: result.data.person.city || '',
             jobType: result.data.person.jobType || '',
             availableDate: result.data.person.availableDate || '',
-            currentAddress: result.data.person.currentAddress || '',
-            registeredAddress: result.data.person.registeredAddress || ''
+            address: result.data.person.address || '',
+            registeredAddress: result.data.person.registeredAddress || '',
+            // 工作相关字段
+            employmentStatus: result.data.person.employmentStatus || '',
+            workYear: result.data.person.workYear || '',
+            workStartDate: result.data.person.workStartDate || ''
           })
         }
 
@@ -130,9 +137,6 @@ export default function FormPage() {
         if (result.data.languages) {
           setLanguages(result.data.languages)
         }
-        if (result.data.socialInsurances) {
-          setSocialInsurances(result.data.socialInsurances)
-        }
 
         console.log('候选人信息加载成功:', result.data)
       } else {
@@ -154,6 +158,16 @@ export default function FormPage() {
 
     return () => clearInterval(interval)
   }, [])
+
+  // 自动隐藏保存提示
+  useEffect(() => {
+    if (saveMessage) {
+      const timer = setTimeout(() => {
+        setSaveMessage(null)
+      }, 3000) // 3秒后自动隐藏
+      return () => clearTimeout(timer)
+    }
+  }, [saveMessage])
 
   // 处理步骤切换
   const handleStepChange = async (newStep: number) => {
@@ -181,8 +195,7 @@ export default function FormPage() {
         skills,
         certificates,
         trainings,
-        languages,
-        socialInsurances
+        languages
       })
 
       const response = await fetch(`/api/person/${personId}/save-draft`, {
@@ -199,8 +212,7 @@ export default function FormPage() {
           skills,
           certificates,
           trainings,
-          languages,
-          socialInsurances
+          languages
         })
       })
 
@@ -212,12 +224,15 @@ export default function FormPage() {
       if (result.success) {
         setLastSaveTime(new Date())
         console.log('保存成功:', result.message)
+        // 显示成功提示
+        setSaveMessage({ type: 'success', text: '草稿保存成功！' })
       } else {
         throw new Error(result.message || '保存失败')
       }
     } catch (error) {
       console.error('自动保存失败:', error)
-      // 可以在这里添加用户提示
+      // 显示失败提示
+      setSaveMessage({ type: 'error', text: error instanceof Error ? error.message : '保存失败，请重试' })
     } finally {
       setSaving(false)
     }
@@ -228,7 +243,33 @@ export default function FormPage() {
     setBasicInfo(data)
   }
 
+  // 处理求职期望变化
+  const handleJobExpectationChange = async (data: any) => {
+    setJobExpectations(data)
+    // 立即保存到数据库
+    setTimeout(() => handleAutoSave(), 100) // 延迟100ms确保状态更新完成
+  }
 
+  // 处理教育经历变化
+  const handleEducationChange = async (data: any) => {
+    setEducations(data)
+    // 立即保存到数据库
+    setTimeout(() => handleAutoSave(), 100) // 延迟100ms确保状态更新完成
+  }
+
+  // 处理工作经历变化
+  const handleWorkExperienceChange = async (data: any) => {
+    setWorkExperiences(data)
+    // 立即保存到数据库
+    setTimeout(() => handleAutoSave(), 100) // 延迟100ms确保状态更新完成
+  }
+
+  // 处理项目经历变化
+  const handleProjectExperienceChange = async (data: any) => {
+    setProjectExperiences(data)
+    // 立即保存到数据库
+    setTimeout(() => handleAutoSave(), 100) // 延迟100ms确保状态更新完成
+  }
 
   // 处理滑动切换
   const handleSwipe = (direction: 'up' | 'down') => {
@@ -236,6 +277,157 @@ export default function FormPage() {
       handleStepChange(currentStep - 1)
     } else if (direction === 'up' && currentStep < STEPS.length - 1) {
       handleStepChange(currentStep + 1)
+    }
+  }
+
+  // 渲染添加按钮
+  const renderAddButton = () => {
+    switch (currentStep) {
+      case 1: // 求职期望
+        return (
+          <button
+            onClick={() => {
+              // 触发求职期望添加逻辑
+              const newJobExpectation = {
+                id: Date.now(),
+                expectedPosition: '',
+                expectedIndustry: '',
+                expectedCity: '',
+                expectedSalary: ''
+              }
+              setJobExpectations(prev => {
+                const newList = [...prev, newJobExpectation]
+                // 自动展开新添加的记录
+                setTimeout(() => {
+                  const newIndex = newList.length - 1
+                  const expandEvent = new CustomEvent('expandJobExpectation', {
+                    detail: { index: newIndex }
+                  })
+                  window.dispatchEvent(expandEvent)
+                }, 100)
+                return newList
+              })
+            }}
+            disabled={jobExpectations.length >= 3}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+              jobExpectations.length >= 3
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            添加求职期望 ({jobExpectations.length}/3)
+          </button>
+        )
+      case 2: // 教育经历
+        return (
+          <button
+            onClick={() => {
+              // 触发教育经历添加逻辑
+              const newEducation = {
+                id: Date.now(),
+                school: '',
+                major: '',
+                degree: '',
+                startDate: '',
+                endDate: '',
+                description: ''
+              }
+              setEducations(prev => {
+                const newList = [...prev, newEducation]
+                // 自动展开新添加的记录
+                setTimeout(() => {
+                  const newIndex = newList.length - 1
+                  const expandEvent = new CustomEvent('expandEducation', {
+                    detail: { index: newIndex }
+                  })
+                  window.dispatchEvent(expandEvent)
+                }, 100)
+                return newList
+              })
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            添加教育经历
+          </button>
+        )
+      case 3: // 工作经历
+        return (
+          <button
+            onClick={() => {
+              // 触发工作经历添加逻辑
+              const newWorkExperience = {
+                id: Date.now(),
+                company: '',
+                position: '',
+                industry: '',
+                startDate: '',
+                endDate: '',
+                description: ''
+              }
+              setWorkExperiences(prev => {
+                const newList = [...prev, newWorkExperience]
+                // 自动展开新添加的记录
+                setTimeout(() => {
+                  const newIndex = newList.length - 1
+                  const expandEvent = new CustomEvent('expandWorkExperience', {
+                    detail: { index: newIndex }
+                  })
+                  window.dispatchEvent(expandEvent)
+                }, 100)
+                return newList
+              })
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            添加工作经历
+          </button>
+        )
+      case 4: // 项目经历
+        return (
+          <button
+            onClick={() => {
+              // 触发项目经历添加逻辑
+              const newProjectExperience = {
+                id: Date.now(),
+                name: '',
+                role: '',
+                startDate: '',
+                endDate: '',
+                description: '',
+                technologies: ''
+              }
+              setProjectExperiences(prev => {
+                const newList = [...prev, newProjectExperience]
+                // 自动展开新添加的记录
+                setTimeout(() => {
+                  const newIndex = newList.length - 1
+                  const expandEvent = new CustomEvent('expandProjectExperience', {
+                    detail: { index: newIndex }
+                  })
+                  window.dispatchEvent(expandEvent)
+                }, 100)
+                return newList
+              })
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            添加项目经历
+          </button>
+        )
+      default:
+        return null
     }
   }
 
@@ -251,10 +443,31 @@ export default function FormPage() {
         )
       case 1: // 求职期望
         return (
-          <div className="text-center text-gray-500 py-20">
-            <p>正在开发 求职期望 表单...</p>
-            <p className="text-sm mt-2">支持最多3条求职期望记录</p>
-          </div>
+          <JobExpectationForm
+            data={jobExpectations}
+            onChange={handleJobExpectationChange}
+          />
+        )
+      case 2: // 教育经历
+        return (
+          <EducationForm
+            data={educations}
+            onChange={handleEducationChange}
+          />
+        )
+      case 3: // 工作经历
+        return (
+          <WorkExperienceForm
+            data={workExperiences}
+            onChange={handleWorkExperienceChange}
+          />
+        )
+      case 4: // 项目经历
+        return (
+          <ProjectExperienceForm
+            data={projectExperiences}
+            onChange={handleProjectExperienceChange}
+          />
         )
       default:
         return (
@@ -338,15 +551,22 @@ export default function FormPage() {
 
       {/* 主要内容区域 */}
       <div className="max-w-4xl mx-auto px-4 py-6">
+
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-              <span className="text-2xl mr-3">{STEPS[currentStep].icon}</span>
-              {STEPS[currentStep].title}
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              步骤 {currentStep + 1} / {STEPS.length}
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <span className="text-2xl mr-3">{STEPS[currentStep].icon}</span>
+                  {STEPS[currentStep].title}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  步骤 {currentStep + 1} / {STEPS.length}
+                </p>
+              </div>
+              {/* 添加按钮区域 - 根据当前步骤显示对应的添加按钮 */}
+              {renderAddButton()}
+            </div>
           </div>
 
           {/* 步骤内容 */}
@@ -354,8 +574,10 @@ export default function FormPage() {
             {renderStepContent()}
           </div>
 
+
+
           {/* 底部导航按钮 */}
-          <div className="flex justify-between mt-8 pt-6 border-t">
+          <div className="flex justify-between items-center mt-8 pt-6 border-t">
             <button
               onClick={() => handleStepChange(currentStep - 1)}
               disabled={currentStep === 0}
@@ -363,8 +585,30 @@ export default function FormPage() {
             >
               上一步
             </button>
-            
-            <div className="flex space-x-3">
+
+            <div className="flex items-center space-x-3">
+              {/* 保存提示消息 - 内联显示 */}
+              {saveMessage && (
+                <div className={`flex items-center space-x-2 px-3 py-1 rounded-md text-sm ${
+                  saveMessage.type === 'success'
+                    ? 'bg-green-50 text-green-700'
+                    : 'bg-red-50 text-red-700'
+                }`}>
+                  <div className="flex-shrink-0">
+                    {saveMessage.type === 'success' ? (
+                      <svg className="h-4 w-4 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="h-4 w-4 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="font-medium">{saveMessage.text}</span>
+                </div>
+              )}
+
               <button
                 onClick={handleAutoSave}
                 disabled={saving}

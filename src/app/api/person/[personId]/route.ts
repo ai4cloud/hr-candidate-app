@@ -131,17 +131,17 @@ export async function GET(
     })
 
     // 转换BigInt为字符串以便JSON序列化
-    const formatData = (data: any) => {
+    const formatData = (data: unknown) => {
       if (Array.isArray(data)) {
         return data.map(item => formatSingleItem(item))
       }
       return formatSingleItem(data)
     }
 
-    const formatSingleItem = (item: any) => {
+    const formatSingleItem = (item: unknown) => {
       if (!item) return item
 
-      const formatted: any = {}
+      const formatted: Record<string, unknown> = {}
 
       for (const [key, value] of Object.entries(item)) {
         if (typeof value === 'bigint') {
@@ -155,7 +155,8 @@ export async function GET(
             formatted[key] = value.toISOString()
           }
         } else {
-          formatted[key] = value
+          // 将null值转换为空字符串，避免React警告
+          formatted[key] = value === null ? '' : value
         }
       }
 

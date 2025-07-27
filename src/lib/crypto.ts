@@ -80,7 +80,17 @@ export function validateToken(token: string): { id?: number; mobile: string; exp
   })
 
   try {
-    const decryptedData = decryptAES(token, key)
+    // 将URL安全的Base64转换回标准Base64
+    let standardToken = token
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+
+    // 补充缺失的填充字符
+    while (standardToken.length % 4) {
+      standardToken += '='
+    }
+
+    const decryptedData = decryptAES(standardToken, key)
     console.log('解密成功，数据长度:', decryptedData.length)
     const tokenData = JSON.parse(decryptedData)
 
