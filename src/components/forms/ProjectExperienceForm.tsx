@@ -10,7 +10,7 @@ interface ProjectExperienceData {
   projectName: string
   companyName: string
   startDate: string
-  endDate: string
+  endDate: string | null  // null 表示"至今"
   technologies: string
   projectDesc: string
   projectRole: string
@@ -30,7 +30,7 @@ export default function ProjectExperienceForm({ data, onChange }: ProjectExperie
     projectName: project.projectName || '',
     companyName: project.companyName || '',
     startDate: project.startDate || '',
-    endDate: project.endDate || '',
+    endDate: project.endDate === undefined ? '' : project.endDate,  // 保持null值，只处理undefined
     technologies: project.technologies || '',
     projectDesc: project.projectDesc || '',
     projectRole: project.projectRole || '',
@@ -75,7 +75,7 @@ export default function ProjectExperienceForm({ data, onChange }: ProjectExperie
   }, [])
 
   // 格式化时间显示 yyyy/mm - yyyy/mm
-  const formatDateRange = (startDate: string, endDate: string): string => {
+  const formatDateRange = (startDate: string, endDate: string | null): string => {
     const formatDate = (dateStr: string): string => {
       if (!dateStr) return ''
       const date = new Date(dateStr)
@@ -85,7 +85,7 @@ export default function ProjectExperienceForm({ data, onChange }: ProjectExperie
     }
 
     const start = formatDate(startDate)
-    const end = formatDate(endDate)
+    const end = endDate === null ? '至今' : formatDate(endDate)
 
     if (!start && !end) return ''
     if (!start) return end
@@ -177,10 +177,11 @@ export default function ProjectExperienceForm({ data, onChange }: ProjectExperie
         if (!value) return '开始时间不能为空'
         break
       case 'endDate':
-        if (!value) return '结束时间不能为空'
-        // 验证结束时间不能早于开始时间
+        // 如果不是"至今"（value !== null），则必须填写结束时间
+        if (value !== null && !value) return '请选择结束时间或选择"至今"'
+        // 如果有具体的结束时间，验证时间逻辑
         const startDate = projectExperiences[index]?.startDate
-        if (startDate && value < startDate) {
+        if (startDate && value && value < startDate) {
           return '结束时间不能早于开始时间'
         }
         break
@@ -326,13 +327,29 @@ export default function ProjectExperienceForm({ data, onChange }: ProjectExperie
                         <Calendar className="w-4 h-4 inline mr-1" />
                         结束时间 <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="date"
-                        value={project.endDate || ''}
-                        onChange={(e) => updateProjectExperience(index, 'endDate', e.target.value)}
-                        onBlur={(e) => handleFieldBlur(index, 'endDate', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
+                      <div className="relative">
+                        <input
+                          type={project.endDate === null ? "text" : "date"}
+                          value={project.endDate === null ? "至今" : (project.endDate || '')}
+                          onChange={(e) => project.endDate !== null && updateProjectExperience(index, 'endDate', e.target.value)}
+                          onBlur={(e) => project.endDate !== null && handleFieldBlur(index, 'endDate', e.target.value)}
+                          readOnly={project.endDate === null}
+                          className={`w-full px-3 py-2 pr-12 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                            project.endDate === null ? 'bg-gray-50 text-gray-700' : ''
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateProjectExperience(index, 'endDate', project.endDate === null ? '' : null)}
+                          className={`absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs rounded transition-colors ${
+                            project.endDate === null
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          }`}
+                        >
+                          至今
+                        </button>
+                      </div>
                       {errors[index]?.endDate && (
                         <p className="mt-1 text-sm text-red-600">{errors[index].endDate}</p>
                       )}

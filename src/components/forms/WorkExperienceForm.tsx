@@ -58,7 +58,7 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
   }, [])
 
   // 格式化时间显示 yyyy/mm - yyyy/mm
-  const formatDateRange = (startDate: string, endDate: string): string => {
+  const formatDateRange = (startDate: string, endDate: string | null): string => {
     const formatDate = (dateStr: string): string => {
       if (!dateStr) return ''
       const date = new Date(dateStr)
@@ -68,7 +68,7 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
     }
 
     const start = formatDate(startDate)
-    const end = formatDate(endDate)
+    const end = endDate === null ? '至今' : formatDate(endDate)
 
     if (!start && !end) return ''
     if (!start) return end
@@ -157,10 +157,12 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
       workExperienceErrors.startDate = '请选择入职时间'
     }
 
-    if (!workExperience.endDate) {
-      workExperienceErrors.endDate = '请选择离职时间'
+    // 如果不是"至今"（endDate !== null），则必须填写离职时间
+    if (workExperience.endDate !== null && !workExperience.endDate) {
+      workExperienceErrors.endDate = '请选择离职时间或选择"至今"'
     }
 
+    // 如果有具体的离职时间，检查时间逻辑
     if (workExperience.startDate && workExperience.endDate && workExperience.startDate > workExperience.endDate) {
       workExperienceErrors.endDate = '离职时间不能早于入职时间'
     }
@@ -297,12 +299,28 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       离职时间 <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="date"
-                      value={workExperience.endDate}
-                      onChange={(e) => updateWorkExperience(index, 'endDate', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                    <div className="relative">
+                      <input
+                        type={workExperience.endDate === null ? "text" : "date"}
+                        value={workExperience.endDate === null ? "至今" : (workExperience.endDate || '')}
+                        onChange={(e) => workExperience.endDate !== null && updateWorkExperience(index, 'endDate', e.target.value)}
+                        readOnly={workExperience.endDate === null}
+                        className={`w-full px-3 py-2 pr-12 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          workExperience.endDate === null ? 'bg-gray-50 text-gray-700' : ''
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateWorkExperience(index, 'endDate', workExperience.endDate === null ? '' : null)}
+                        className={`absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs rounded transition-colors ${
+                          workExperience.endDate === null
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        至今
+                      </button>
+                    </div>
                     {errors[index]?.endDate && (
                       <p className="text-red-500 text-sm mt-1">{errors[index].endDate}</p>
                     )}

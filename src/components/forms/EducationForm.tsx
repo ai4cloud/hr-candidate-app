@@ -56,7 +56,7 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
   }
 
   // 格式化时间显示 yyyy/mm - yyyy/mm
-  const formatDateRange = (startDate: string, endDate: string): string => {
+  const formatDateRange = (startDate: string, endDate: string | null): string => {
     const formatDate = (dateStr: string): string => {
       if (!dateStr) return ''
       const date = new Date(dateStr)
@@ -66,7 +66,7 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
     }
 
     const start = formatDate(startDate)
-    const end = formatDate(endDate)
+    const end = endDate === null ? '至今' : formatDate(endDate)
 
     if (!start && !end) return ''
     if (!start) return end
@@ -220,10 +220,12 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
       educationErrors.startDate = '请选择开始时间'
     }
 
-    if (!education.endDate) {
-      educationErrors.endDate = '请选择结束时间'
+    // 如果不是"至今"（endDate !== null），则必须填写结束时间
+    if (education.endDate !== null && !education.endDate) {
+      educationErrors.endDate = '请选择结束时间或选择"至今"'
     }
 
+    // 如果有具体的结束时间，检查时间逻辑
     if (education.startDate && education.endDate && education.startDate > education.endDate) {
       educationErrors.endDate = '结束时间不能早于开始时间'
     }
@@ -402,12 +404,28 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       毕业时间 <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="date"
-                      value={education.endDate}
-                      onChange={(e) => updateEducation(index, 'endDate', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                    <div className="relative">
+                      <input
+                        type={education.endDate === null ? "text" : "date"}
+                        value={education.endDate === null ? "至今" : (education.endDate || '')}
+                        onChange={(e) => education.endDate !== null && updateEducation(index, 'endDate', e.target.value)}
+                        readOnly={education.endDate === null}
+                        className={`w-full px-3 py-2 pr-12 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          education.endDate === null ? 'bg-gray-50 text-gray-700' : ''
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateEducation(index, 'endDate', education.endDate === null ? '' : null)}
+                        className={`absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs rounded transition-colors ${
+                          education.endDate === null
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        至今
+                      </button>
+                    </div>
                     {errors[index]?.endDate && (
                       <p className="text-red-500 text-sm mt-1">{errors[index].endDate}</p>
                     )}
