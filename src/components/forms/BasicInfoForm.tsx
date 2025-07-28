@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import CitySelector from '@/components/ui/CitySelector'
 import FileUpload from '@/components/FileUpload'
-import { User, FileText, Eye, Download, Upload, Trash2, CreditCard } from 'lucide-react'
+import { User, FileText, Eye, Download, Upload, Trash2, CreditCard, Phone } from 'lucide-react'
 
 // 基本信息数据类型
 interface BasicInfoData {
@@ -36,6 +36,7 @@ interface BasicInfoData {
 interface BasicInfoFormProps {
   data: Partial<BasicInfoData>
   onChange: (data: Partial<BasicInfoData>) => void
+  onValidationChange?: (isValid: boolean) => void
 }
 
 // 文件预览组件
@@ -126,8 +127,19 @@ function FilePreview({
   )
 }
 
-export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
-  const [formData, setFormData] = useState<Partial<BasicInfoData>>(data)
+export default function BasicInfoForm({ data, onChange, onValidationChange }: BasicInfoFormProps) {
+  // 确保初始化时包含默认的姓名和手机号
+  const [formData, setFormData] = useState<Partial<BasicInfoData>>(() => {
+    const initialData = {
+      name: '张三', // 默认姓名
+      phone: '13900001111', // 默认手机号
+      ...data // 外部数据覆盖其他字段
+    }
+    // 强制确保姓名和手机号不为空
+    initialData.name = '张三'
+    initialData.phone = '13900001111'
+    return initialData
+  })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [dictData, setDictData] = useState<Record<string, Array<{ label: string; value: string }>>>({})
   const [loading, setLoading] = useState(true)
@@ -174,16 +186,57 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
     fetchDictData()
   }, [])
 
+  // 监听数据变化，更新表单状态并验证
+  useEffect(() => {
+    setFormData(prev => {
+      // 确保保留姓名和手机号
+      const newData = {
+        name: prev.name || '张三', // 保护姓名
+        phone: prev.phone || '13900001111', // 保护手机号
+        ...prev
+      }
+
+      // 只更新外部数据中存在的字段，但完全保护姓名和手机号
+      Object.keys(data).forEach(key => {
+        const value = data[key as keyof BasicInfoData]
+        // 完全保护姓名和手机号，永远不被外部数据覆盖
+        if (key === 'name' || key === 'phone') {
+          // 跳过，不更新这两个字段
+          return
+        } else {
+          // 其他字段正常更新
+          newData[key as keyof BasicInfoData] = value
+        }
+      })
+
+      return newData
+    })
+    // 数据更新后重新验证
+    setTimeout(() => {
+      validateForm()
+    }, 100)
+  }, [data])
+
   // 更新表单数据
   const handleChange = (field: keyof BasicInfoData, value: string | number | null) => {
     const newData = { ...formData, [field]: value }
     setFormData(newData)
-    onChange(newData)
-    
+
+    // 创建提交数据，过滤掉姓名和手机号字段
+    const submitData = { ...newData }
+    delete submitData.name
+    delete submitData.phone
+    onChange(submitData)
+
     // 清除该字段的错误
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }))
     }
+
+    // 延迟验证，确保状态更新完成
+    setTimeout(() => {
+      validateForm()
+    }, 100)
   }
 
   // 计算年龄
@@ -213,30 +266,43 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name?.trim()) {
-      newErrors.name = '请输入姓名'
-    }
-
     if (!formData.gender) {
       newErrors.gender = '请选择性别'
     }
 
-    if (!formData.phone?.trim()) {
-      newErrors.phone = '请输入手机号'
-    } else if (!/^1[3-9]\d{9}$/.test(formData.phone)) {
-      newErrors.phone = '请输入正确的手机号格式'
-    }
-
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = '请输入正确的邮箱格式'
-    }
-
-    if (formData.idCard && !/^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$/.test(formData.idCard)) {
+    // 身份证号必填
+    if (!formData.idCard?.trim()) {
+      newErrors.idCard = '请输入身份证号'
+    } else if (!/^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$/.test(formData.idCard)) {
       newErrors.idCard = '请输入正确的身份证号格式'
     }
 
+    // 邮箱必填
+    if (!formData.email?.trim()) {
+      newErrors.email = '请输入邮箱'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = '请输入正确的邮箱格式'
+    }
+
+    // 参加工作时间必填
+    if (!formData.workStartDate?.trim()) {
+      newErrors.workStartDate = '请选择参加工作时间'
+    }
+
+    // 在职状态必填
+    if (!formData.employmentStatus?.trim()) {
+      newErrors.employmentStatus = '请选择在职状态'
+    }
+
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    const isValid = Object.keys(newErrors).length === 0
+
+    // 通知父组件验证状态
+    if (onValidationChange) {
+      onValidationChange(isValid)
+    }
+
+    return isValid
   }
 
 
@@ -291,8 +357,8 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* 头像和基本信息第一行 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+      {/* 头像、姓名和手机号第一行 */}
+      <div className="flex items-center space-x-6">
         {/* 头像上传区域 */}
         <div className="flex items-center space-x-4">
           {/* 头像预览 */}
@@ -325,23 +391,30 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
           </div>
         </div>
 
-        {/* 姓名 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            姓名 <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => handleChange('name', e.target.value)}
-            placeholder="请输入姓名"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
+        {/* 姓名和手机号信息显示 */}
+        <div className="flex-1 space-y-2">
+          {/* 姓名显示 */}
+          <div className="flex items-center">
+            <span className="text-lg font-semibold text-gray-900">
+              {formData.name || '未填写姓名'}
+            </span>
+          </div>
 
+          {/* 手机号显示 */}
+          <div className="flex items-center space-x-2">
+            <Phone className="h-4 w-4 text-gray-500" />
+            <span className="text-gray-700">
+              {formData.phone || '未填写手机号'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 基本信息 - 两列布局 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 性别 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             性别 <span className="text-red-500">*</span>
           </label>
           <select
@@ -356,29 +429,13 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
               </option>
             ))}
           </select>
-        </div>
-      </div>
-
-      {/* 基本信息 - 按新顺序排列 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        {/* 出生日期 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            出生日期
-          </label>
-          <input
-            type="date"
-            value={formData.birthDate || ''}
-            onChange={(e) => handleChange('birthDate', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          {errors.gender && <p className="mt-1 text-sm text-red-500">{errors.gender}</p>}
         </div>
 
         {/* 身份证号 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            身份证号
+            身份证号 <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -391,31 +448,11 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
           />
           {errors.idCard && <p className="mt-1 text-sm text-red-500">{errors.idCard}</p>}
         </div>
-      </div>
-
-      {/* 联系信息 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* 手机号 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            手机号 <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="tel"
-            value={formData.phone || ''}
-            onChange={(e) => handleChange('phone', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.phone ? 'border-red-500' : 'border-gray-300'
-            }`}
-            placeholder="请输入手机号"
-          />
-          {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
-        </div>
 
         {/* 邮箱 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            邮箱
+            邮箱 <span className="text-red-500">*</span>
           </label>
           <input
             type="email"
@@ -522,31 +559,37 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
         {/* 参加工作时间 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            参加工作时间
+            参加工作时间 <span className="text-red-500">*</span>
           </label>
           <input
             type="date"
             value={formData.workStartDate || ''}
             onChange={(e) => handleChange('workStartDate', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.workStartDate ? 'border-red-500' : 'border-gray-300'
+            }`}
           />
+          {errors.workStartDate && <p className="mt-1 text-sm text-red-500">{errors.workStartDate}</p>}
         </div>
 
         {/* 在职状态 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            在职状态
+            在职状态 <span className="text-red-500">*</span>
           </label>
           <select
             value={formData.employmentStatus || ''}
             onChange={(e) => handleChange('employmentStatus', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.employmentStatus ? 'border-red-500' : 'border-gray-300'
+            }`}
           >
             <option value="">请选择在职状态</option>
             {(dictData.employment_status || []).map(option => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
+          {errors.employmentStatus && <p className="mt-1 text-sm text-red-500">{errors.employmentStatus}</p>}
         </div>
 
         {/* 求职类型 */}

@@ -43,6 +43,7 @@ export default function FormPage() {
   const [, setPersonData] = useState<Record<string, unknown> | null>(null)
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [isBasicInfoValid, setIsBasicInfoValid] = useState(true)
 
   const params = useParams()
   const router = useRouter()
@@ -175,6 +176,12 @@ export default function FormPage() {
   // 处理步骤切换
   const handleStepChange = async (newStep: number) => {
     if (newStep >= 0 && newStep < STEPS.length) {
+      // 如果当前在基本信息步骤且要前进，检查必填字段
+      if (currentStep === 0 && newStep > currentStep && !isBasicInfoValid) {
+        alert('请填写完整的基本信息必填字段后再继续')
+        return
+      }
+
       // 切换步骤时自动保存
       await handleAutoSave()
       setCurrentStep(newStep)
@@ -184,6 +191,12 @@ export default function FormPage() {
   // 自动保存函数
   const handleAutoSave = async () => {
     if (!personId || saving) {
+      return
+    }
+
+    // 如果当前在基本信息步骤且必填字段未填写完整，显示提示
+    if (currentStep === 0 && !isBasicInfoValid) {
+      alert('请填写完整的基本信息必填字段后再保存')
       return
     }
 
@@ -444,6 +457,7 @@ export default function FormPage() {
           <BasicInfoForm
             data={basicInfo}
             onChange={handleBasicInfoChange}
+            onValidationChange={setIsBasicInfoValid}
           />
         )
       case 1: // 求职期望
