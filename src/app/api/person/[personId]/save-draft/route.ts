@@ -67,6 +67,10 @@ export async function POST(
         if (basicInfo.registeredAddress) updateData.registeredAddress = basicInfo.registeredAddress
         if (basicInfo.avatarUrl) updateData.avatarUrl = basicInfo.avatarUrl
 
+        // 身份证照片字段
+        if (basicInfo.idCardFrontUrl) updateData.idCardFrontUrl = basicInfo.idCardFrontUrl
+        if (basicInfo.idCardBackUrl) updateData.idCardBackUrl = basicInfo.idCardBackUrl
+
         // 工作相关字段
         if (basicInfo.employmentStatus) updateData.employmentStatus = basicInfo.employmentStatus
         if (basicInfo.workYear) updateData.workYear = basicInfo.workYear

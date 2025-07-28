@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import CitySelector from '@/components/ui/CitySelector'
 import FileUpload from '@/components/FileUpload'
-import { User } from 'lucide-react'
+import { User, FileText, Eye, Download, Upload, Trash2, CreditCard } from 'lucide-react'
 
 // 基本信息数据类型
 interface BasicInfoData {
@@ -24,6 +24,8 @@ interface BasicInfoData {
   jobType: string
   availableDate: string
   avatarUrl: string
+  idCardFrontUrl: string  // 身份证正面照URL
+  idCardBackUrl: string   // 身份证反面照URL
 
   // 工作相关字段
   employmentStatus: string
@@ -36,6 +38,94 @@ interface BasicInfoFormProps {
   onChange: (data: Partial<BasicInfoData>) => void
 }
 
+// 文件预览组件
+function FilePreview({
+  fileUrl,
+  fileName,
+  onDelete,
+  onReupload
+}: {
+  fileUrl: string;
+  fileName?: string;
+  onDelete: () => void;
+  onReupload: () => void;
+}) {
+  if (!fileUrl) return null
+
+  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(fileUrl)
+  const displayName = fileName || fileUrl.split('/').pop() || '文件'
+
+  return (
+    <div className="mt-2 p-3 bg-gray-50 rounded-lg border">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2 flex-1 min-w-0">
+          <FileText className="h-4 w-4 text-gray-500 flex-shrink-0" />
+          <span className="text-sm text-gray-700 truncate">{displayName}</span>
+        </div>
+        <div className="flex items-center space-x-1 ml-2">
+          {/* 预览按钮 */}
+          <button
+            type="button"
+            onClick={() => window.open(fileUrl, '_blank')}
+            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+            title={isImage ? "预览图片" : "查看文件"}
+          >
+            <Eye className="h-4 w-4" />
+          </button>
+
+          {/* 下载按钮 */}
+          <button
+            type="button"
+            onClick={() => {
+              const link = document.createElement('a')
+              link.href = fileUrl
+              link.download = displayName
+              link.target = '_blank'
+              document.body.appendChild(link)
+              link.click()
+              document.body.removeChild(link)
+            }}
+            className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
+            title="下载文件"
+          >
+            <Download className="h-4 w-4" />
+          </button>
+
+          {/* 重新上传按钮 */}
+          <button
+            type="button"
+            onClick={onReupload}
+            className="p-1.5 text-orange-600 hover:bg-orange-50 rounded transition-colors"
+            title="重新上传"
+          >
+            <Upload className="h-4 w-4" />
+          </button>
+
+          {/* 删除按钮 */}
+          <button
+            type="button"
+            onClick={onDelete}
+            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+            title="删除文件"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {isImage && (
+        <div className="mt-3">
+          <img
+            src={fileUrl}
+            alt="预览"
+            className="max-w-full h-32 object-contain rounded border bg-white"
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
   const [formData, setFormData] = useState<Partial<BasicInfoData>>(data)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -45,8 +135,8 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
 
   // 固定的性别选项
   const genderOptions = [
-    { value: 'male', label: '男' },
-    { value: 'female', label: '女' }
+    { value: '1', label: '男' },
+    { value: '2', label: '女' }
   ]
 
   // 当外部数据更新时，同步内部状态
@@ -167,6 +257,38 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
     handleChange('avatarUrl', fileUrl)
   }
 
+  // 处理身份证文件上传
+  const handleIdCardUpload = (field: 'idCardFrontUrl' | 'idCardBackUrl') => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('directory', 'id-cards')
+
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          })
+
+          const result = await response.json()
+          if (result.success && result.data?.fileUrl) {
+            handleChange(field, result.data.fileUrl)
+          } else {
+            console.error('文件上传失败:', result.error || result.message || '未知错误')
+          }
+        } catch (error) {
+          console.error('文件上传失败:', error)
+        }
+      }
+    }
+    input.click()
+  }
+
   return (
     <div className="space-y-6">
       {/* 头像和基本信息第一行 */}
@@ -223,13 +345,16 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
             性别 <span className="text-red-500">*</span>
           </label>
           <select
-            value={formData.gender}
+            value={formData.gender || ''}
             onChange={(e) => handleChange('gender', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">请选择性别</option>
-            <option value="男">男</option>
-            <option value="女">女</option>
+            {genderOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -266,7 +391,10 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
           />
           {errors.idCard && <p className="mt-1 text-sm text-red-500">{errors.idCard}</p>}
         </div>
+      </div>
 
+      {/* 联系信息 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 手机号 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -464,6 +592,62 @@ export default function BasicInfoForm({ data, onChange }: BasicInfoFormProps) {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="请输入户籍地址"
           />
+        </div>
+      </div>
+
+      {/* 身份证照片上传区域 */}
+      <div className="space-y-4">
+        <h4 className="flex items-center text-lg font-medium text-gray-900">
+          <CreditCard className="h-5 w-5 mr-2" />
+          身份证照片
+        </h4>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* 身份证正面照 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              身份证正面照
+            </label>
+            {!formData.idCardFrontUrl ? (
+              <FileUpload
+                onFileUploaded={(fileUrl, fileName) => handleChange('idCardFrontUrl', fileUrl)}
+                directory="id-cards"
+                accept="image/*"
+                maxSize={10}
+                placeholder="上传身份证正面照"
+                currentFile={formData.idCardFrontUrl}
+              />
+            ) : (
+              <FilePreview
+                fileUrl={formData.idCardFrontUrl}
+                onDelete={() => handleChange('idCardFrontUrl', '')}
+                onReupload={() => handleIdCardUpload('idCardFrontUrl')}
+              />
+            )}
+          </div>
+
+          {/* 身份证反面照 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              身份证反面照
+            </label>
+            {!formData.idCardBackUrl ? (
+              <FileUpload
+                onFileUploaded={(fileUrl, fileName) => handleChange('idCardBackUrl', fileUrl)}
+                directory="id-cards"
+                accept="image/*"
+                maxSize={10}
+                placeholder="上传身份证反面照"
+                currentFile={formData.idCardBackUrl}
+              />
+            ) : (
+              <FilePreview
+                fileUrl={formData.idCardBackUrl}
+                onDelete={() => handleChange('idCardBackUrl', '')}
+                onReupload={() => handleIdCardUpload('idCardBackUrl')}
+              />
+            )}
+          </div>
         </div>
       </div>
 

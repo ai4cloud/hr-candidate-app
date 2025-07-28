@@ -223,7 +223,7 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
                     </label>
                     <input
                       type="text"
-                      value={workExperience.companyName}
+                      value={workExperience.companyName || ''}
                       onChange={(e) => updateWorkExperience(index, 'companyName', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="请输入公司名称"
@@ -240,7 +240,7 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
                     </label>
                     <input
                       type="text"
-                      value={workExperience.position}
+                      value={workExperience.position || ''}
                       onChange={(e) => updateWorkExperience(index, 'position', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="请输入职位"
@@ -257,7 +257,7 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
                     </label>
                     <input
                       type="text"
-                      value={workExperience.industry}
+                      value={workExperience.industry || ''}
                       onChange={(e) => updateWorkExperience(index, 'industry', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="请输入行业"
@@ -271,7 +271,7 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
                     </label>
                     <input
                       type="text"
-                      value={workExperience.location}
+                      value={workExperience.location || ''}
                       onChange={(e) => updateWorkExperience(index, 'location', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="请输入工作地点"
@@ -285,7 +285,7 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
                     </label>
                     <input
                       type="date"
-                      value={workExperience.startDate}
+                      value={workExperience.startDate || ''}
                       onChange={(e) => updateWorkExperience(index, 'startDate', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
@@ -333,7 +333,7 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
                     </label>
                     <input
                       type="text"
-                      value={workExperience.department}
+                      value={workExperience.department || ''}
                       onChange={(e) => updateWorkExperience(index, 'department', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="请输入所属部门"
@@ -346,7 +346,7 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
                       工作职责与业绩
                     </label>
                     <textarea
-                      value={workExperience.responsibilityPerformance}
+                      value={workExperience.responsibilityPerformance || ''}
                       onChange={(e) => updateWorkExperience(index, 'responsibilityPerformance', e.target.value)}
                       rows={4}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

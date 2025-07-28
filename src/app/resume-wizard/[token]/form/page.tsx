@@ -7,6 +7,7 @@ import JobExpectationForm from '@/components/forms/JobExpectationForm'
 import EducationForm from '@/components/forms/EducationForm'
 import WorkExperienceForm from '@/components/forms/WorkExperienceForm'
 import ProjectExperienceForm from '@/components/forms/ProjectExperienceForm'
+import PreviewForm from '@/components/forms/PreviewForm'
 
 // 步骤定义
 const STEPS = [
@@ -18,7 +19,8 @@ const STEPS = [
   { id: 'skills', title: '技能特长', icon: '⚡' },
   { id: 'certificates', title: '资格证书', icon: '🏆' },
   { id: 'training', title: '培训经历', icon: '📚' },
-  { id: 'languages', title: '语言能力', icon: '🌍' }
+  { id: 'languages', title: '语言能力', icon: '🌍' },
+  { id: 'preview', title: '预览提交', icon: '📋' }
 ]
 
 export default function FormPage() {
@@ -363,13 +365,15 @@ export default function FormPage() {
             onClick={() => {
               // 触发工作经历添加逻辑
               const newWorkExperience = {
-                id: Date.now(),
-                company: '',
+                id: Date.now().toString(),
+                companyName: '',
                 position: '',
                 industry: '',
                 startDate: '',
                 endDate: '',
-                description: ''
+                location: '',
+                department: '',
+                responsibilityPerformance: ''
               }
               setWorkExperiences(prev => {
                 const newList = [...prev, newWorkExperience]
@@ -468,6 +472,22 @@ export default function FormPage() {
           <ProjectExperienceForm
             data={projectExperiences}
             onChange={handleProjectExperienceChange}
+          />
+        )
+      case 9: // 预览提交
+        return (
+          <PreviewForm
+            data={{
+              person: basicInfo,
+              jobExpectations: jobExpectations,
+              educations: educations,
+              workExperiences: workExperiences,
+              projectExperiences: projectExperiences,
+              skills: [],
+              certificates: [],
+              trainings: [],
+              languages: []
+            }}
           />
         )
       default:
