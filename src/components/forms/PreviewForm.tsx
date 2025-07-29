@@ -145,6 +145,46 @@ function FilePreview({ fileUrl, fileName }: { fileUrl: string; fileName?: string
 
 export default function PreviewForm({ data }: PreviewFormProps) {
   const { person, jobExpectations, educations, workExperiences, projectExperiences } = data
+  const [dictData, setDictData] = useState<Record<string, Array<{ label: string; value: string }>>>({})
+  const [loading, setLoading] = useState(true)
+
+  // 从API获取字典数据
+  useEffect(() => {
+    const fetchDictData = async () => {
+      try {
+        const response = await fetch('/api/dict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            types: ['ethnicity', 'nationality', 'political_status', 'marital_status', 'job_type', 'employment_status', 'education_level', 'degree']
+          }),
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          setDictData(result.data)
+        } else {
+          console.error('获取字典数据失败')
+        }
+      } catch (error) {
+        console.error('获取字典数据异常:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDictData()
+  }, [])
+
+  // 根据value获取label的辅助函数
+  const getDictLabel = (dictType: string, value: string): string => {
+    if (!value) return '未填写'
+    const options = dictData[dictType] || []
+    const option = options.find(opt => opt.value === value)
+    return option ? option.label : value
+  }
 
   // 性别映射
   const getGenderText = (gender: string) => {
@@ -201,23 +241,27 @@ export default function PreviewForm({ data }: PreviewFormProps) {
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">民族</label>
-            <p className="text-gray-900">{person.ethnicity || '未填写'}</p>
+            <p className="text-gray-900">{getDictLabel('ethnicity', person.ethnicity)}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">国籍</label>
-            <p className="text-gray-900">{person.nationality || '未填写'}</p>
+            <p className="text-gray-900">{getDictLabel('nationality', person.nationality)}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">政治面貌</label>
-            <p className="text-gray-900">{person.politicalStatus || '未填写'}</p>
+            <p className="text-gray-900">{getDictLabel('political_status', person.politicalStatus)}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">婚姻状况</label>
-            <p className="text-gray-900">{person.maritalStatus || '未填写'}</p>
+            <p className="text-gray-900">{getDictLabel('marital_status', person.maritalStatus)}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">在职状态</label>
-            <p className="text-gray-900">{person.employmentStatus || '未填写'}</p>
+            <p className="text-gray-900">{getDictLabel('employment_status', person.employmentStatus)}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-500">求职类型</label>
+            <p className="text-gray-900">{getDictLabel('job_type', person.jobType)}</p>
           </div>
         </div>
 
@@ -306,7 +350,7 @@ export default function PreviewForm({ data }: PreviewFormProps) {
                     </span>
                   </h4>
                   <p className="text-base font-medium text-gray-700 mb-3">
-                    {education.major || '专业'} · {education.educationLevel || '学历'} · {education.degree || '学位'}
+                    {education.major || '专业'} · {getDictLabel('education_level', education.educationLevel)} · {getDictLabel('degree', education.degree)}
                   </p>
                 </div>
 

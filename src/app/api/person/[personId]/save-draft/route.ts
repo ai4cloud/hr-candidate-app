@@ -1,9 +1,92 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@/generated/prisma'
+import { prisma } from '@/lib/prisma'
 import { getDefaultTenantId } from '@/lib/config'
 import { processBasicInfo, calculateWorkInfoFromExperiences } from '@/lib/person-utils'
 
-const prisma = new PrismaClient()
+// 学历优先级映射（数字越小优先级越高）
+const EDUCATION_LEVEL_PRIORITY: Record<string, number> = {
+  'doctor': 1,           // 博士研究生
+  'master': 2,           // 硕士研究生
+  'bachelor': 3,         // 本科
+  'associate': 4,        // 大专
+  'technical_secondary': 5 // 中专
+}
+
+// 学位优先级映射（数字越小优先级越高）
+const DEGREE_PRIORITY: Record<string, number> = {
+  'phd': 1,      // 博士
+  'master': 2,   // 硕士
+  'bachelor': 3, // 学士
+  'none': 4      // 无学位
+}
+
+// 推算最高学历、最高学位和对应的学校名称
+async function updateHighestEducation(tx: any, personId: bigint) {
+  // 获取该人员的所有教育经历
+  const educations = await tx.hrPersonEducation.findMany({
+    where: {
+      personId: personId,
+      deleted: false
+    },
+    select: {
+      schoolName: true,
+      educationLevel: true,
+      degree: true,
+      startDate: true,
+      endDate: true
+    }
+  })
+
+  if (educations.length === 0) {
+    // 如果没有教育经历，清空相关字段
+    await tx.hrPerson.update({
+      where: { id: personId },
+      data: {
+        educationLevel: null,
+        degree: null,
+        school: null,
+        updateTime: new Date()
+      }
+    })
+    return
+  }
+
+  // 找到最高学历
+  let highestEducation = educations[0]
+  let highestEducationPriority = EDUCATION_LEVEL_PRIORITY[highestEducation.educationLevel] || 999
+
+  for (const edu of educations) {
+    const priority = EDUCATION_LEVEL_PRIORITY[edu.educationLevel] || 999
+    if (priority < highestEducationPriority) {
+      highestEducation = edu
+      highestEducationPriority = priority
+    }
+  }
+
+  // 找到最高学位
+  let highestDegree = educations[0]
+  let highestDegreePriority = DEGREE_PRIORITY[highestDegree.degree] || 999
+
+  for (const edu of educations) {
+    const priority = DEGREE_PRIORITY[edu.degree] || 999
+    if (priority < highestDegreePriority) {
+      highestDegree = edu
+      highestDegreePriority = priority
+    }
+  }
+
+  // 更新person表中的最高学历、最高学位和对应的学校名称
+  // 学校名称取最高学历对应的学校
+  await tx.hrPerson.update({
+    where: { id: personId },
+    data: {
+      educationLevel: highestEducation.educationLevel,
+      degree: highestDegree.degree,
+      school: highestEducation.schoolName,
+      updateTime: new Date()
+    }
+  })
+}
 
 export async function POST(
   request: NextRequest,
@@ -174,6 +257,9 @@ export async function POST(
             })
           }
         }
+
+        // 推算最高学历、最高学位和对应的学校名称
+        await updateHighestEducation(tx, BigInt(personId))
       }
 
       // 4. 更新工作经历（如果有数据）
