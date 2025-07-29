@@ -112,6 +112,8 @@ export default function FormPage() {
             address: result.data.person.address || '',
             registeredAddress: result.data.person.registeredAddress || '',
             avatarUrl: result.data.person.avatarUrl || '',
+            idCardFrontUrl: result.data.person.idCardFrontUrl || '',
+            idCardBackUrl: result.data.person.idCardBackUrl || '',
             // 工作相关字段
             employmentStatus: result.data.person.employmentStatus || '',
             workYear: result.data.person.workYear || '',

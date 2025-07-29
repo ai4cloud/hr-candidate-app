@@ -27,6 +27,9 @@ interface PersonData {
   employmentStatus: string
   workYear: string
   workStartDate: string
+  educationLevel: string
+  degree: string
+  school: string
 }
 
 interface JobExpectationData {
@@ -144,38 +147,62 @@ function FilePreview({ fileUrl, fileName }: { fileUrl: string; fileName?: string
 }
 
 export default function PreviewForm({ data }: PreviewFormProps) {
-  const { person, jobExpectations, educations, workExperiences, projectExperiences } = data
+  const { jobExpectations, educations, workExperiences, projectExperiences } = data
+  const [person, setPerson] = useState<PersonData>(data.person)
   const [dictData, setDictData] = useState<Record<string, Array<{ label: string; value: string }>>>({})
   const [loading, setLoading] = useState(true)
 
-  // 从API获取字典数据
+  // 从API获取最新的person数据和字典数据
   useEffect(() => {
-    const fetchDictData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/dict', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            types: ['ethnicity', 'nationality', 'political_status', 'marital_status', 'job_type', 'employment_status', 'education_level', 'degree']
-          }),
-        })
+        // 获取personId
+        const personId = sessionStorage.getItem('personId')
+        if (!personId) {
+          console.error('未找到personId')
+          setLoading(false)
+          return
+        }
 
-        if (response.ok) {
-          const result = await response.json()
-          setDictData(result.data)
+        // 并行获取person数据和字典数据
+        const [personResponse, dictResponse] = await Promise.all([
+          fetch(`/api/person/${personId}`),
+          fetch('/api/dict', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              types: ['ethnicity', 'nationality', 'political_status', 'marital_status', 'job_type', 'employment_status', 'education_level', 'degree']
+            }),
+          })
+        ])
+
+        // 处理person数据
+        if (personResponse.ok) {
+          const personResult = await personResponse.json()
+          if (personResult.success && personResult.data.person) {
+            setPerson(personResult.data.person)
+          }
+        } else {
+          console.error('获取person数据失败')
+        }
+
+        // 处理字典数据
+        if (dictResponse.ok) {
+          const dictResult = await dictResponse.json()
+          setDictData(dictResult.data)
         } else {
           console.error('获取字典数据失败')
         }
       } catch (error) {
-        console.error('获取字典数据异常:', error)
+        console.error('获取数据异常:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchDictData()
+    fetchData()
   }, [])
 
   // 根据value获取label的辅助函数
@@ -224,6 +251,10 @@ export default function PreviewForm({ data }: PreviewFormProps) {
             <p className="text-gray-900">{formatDate(person.birthDate)}</p>
           </div>
           <div>
+            <label className="text-sm font-medium text-gray-500">年龄</label>
+            <p className="text-gray-900">{person.age ? `${person.age}岁` : '未填写'}</p>
+          </div>
+          <div>
             <label className="text-sm font-medium text-gray-500">身份证号</label>
             <p className="text-gray-900">{person.idCard || '未填写'}</p>
           </div>
@@ -262,6 +293,18 @@ export default function PreviewForm({ data }: PreviewFormProps) {
           <div>
             <label className="text-sm font-medium text-gray-500">求职类型</label>
             <p className="text-gray-900">{getDictLabel('job_type', person.jobType)}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-500">最高学历</label>
+            <p className="text-gray-900">{getDictLabel('education_level', person.educationLevel)}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-500">最高学位</label>
+            <p className="text-gray-900">{getDictLabel('degree', person.degree)}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-500">毕业学校</label>
+            <p className="text-gray-900">{person.school || '未填写'}</p>
           </div>
         </div>
 
