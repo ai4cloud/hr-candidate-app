@@ -325,12 +325,7 @@ export default function ProjectExperienceForm({ data, onChange }: ProjectExperie
 
                     <div>
                       <DatePickerWithToday
-                        label={
-                          <span className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-1" />
-                            结束时间
-                          </span>
-                        }
+                        label="结束时间"
                         required
                         value={project.endDate}
                         onChange={(value) => updateProjectExperience(index, 'endDate', value)}
