@@ -222,10 +222,31 @@ export default function PreviewForm({ data }: PreviewFormProps) {
     }
   }
 
-  // 格式化日期
+  // 格式化日期为 yyyy/mm 格式
   const formatDate = (dateString: string) => {
     if (!dateString) return '未填写'
-    return dateString
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return dateString // 如果日期无效，返回原字符串
+
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      return `${year}/${month}`
+    } catch (error) {
+      return dateString // 如果解析失败，返回原字符串
+    }
+  }
+
+  // 格式化日期范围，处理endDate为null的情况
+  const formatDateRange = (startDate: string, endDate: string | null) => {
+    const formattedStartDate = formatDate(startDate)
+
+    if (!endDate || endDate === null) {
+      return `${formattedStartDate}-至今`
+    }
+
+    const formattedEndDate = formatDate(endDate)
+    return `${formattedStartDate}-${formattedEndDate}`
   }
 
   return (
@@ -236,7 +257,20 @@ export default function PreviewForm({ data }: PreviewFormProps) {
           <User className="h-5 w-5 mr-2" />
           基本信息
         </h3>
-        
+
+        {/* 头像区域 */}
+        {person.avatarUrl && (
+          <div className="mb-6 flex justify-center">
+            <div className="relative">
+              <img
+                src={person.avatarUrl}
+                alt="头像"
+                className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-lg"
+              />
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium text-gray-500">姓名</label>
@@ -389,7 +423,7 @@ export default function PreviewForm({ data }: PreviewFormProps) {
                   <h4 className="text-lg font-semibold text-gray-900 mb-2">
                     {education.schoolName || '未填写'}
                     <span className="text-sm text-gray-500 font-normal ml-3">
-                      {formatDate(education.startDate)}-{formatDate(education.endDate)}
+                      {formatDateRange(education.startDate, education.endDate)}
                     </span>
                   </h4>
                   <p className="text-base font-medium text-gray-700 mb-3">
@@ -478,7 +512,7 @@ export default function PreviewForm({ data }: PreviewFormProps) {
                   <h4 className="text-lg font-semibold text-gray-900 mb-2">
                     {work.companyName || '未填写'}
                     <span className="text-sm text-gray-500 font-normal ml-3">
-                      {formatDate(work.startDate)}-{formatDate(work.endDate)}
+                      {formatDateRange(work.startDate, work.endDate)}
                     </span>
                   </h4>
                   <p className="text-base font-medium text-gray-700 mb-3">
@@ -540,7 +574,7 @@ export default function PreviewForm({ data }: PreviewFormProps) {
                   <h4 className="text-lg font-semibold text-gray-900 mb-2">
                     {project.projectName || '未填写'}
                     <span className="text-sm text-gray-500 font-normal ml-3">
-                      {formatDate(project.startDate)}-{formatDate(project.endDate)}
+                      {formatDateRange(project.startDate, project.endDate)}
                     </span>
                   </h4>
                   <p className="text-base font-medium text-gray-700 mb-3">
