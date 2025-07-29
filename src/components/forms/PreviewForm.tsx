@@ -575,125 +575,63 @@ export default function PreviewForm({ data }: PreviewFormProps) {
           <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
             🚀 项目经历
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {projectExperiences.map((project, index) => (
-              <div key={project.id || index} className="border border-gray-200 rounded-lg p-4">
-                {/* 项目经历标题栏 */}
-                <div className="flex items-center gap-2 mb-3">
-                  <Code className="w-5 h-5 text-blue-600" />
-                  <div>
-                    <h3 className="font-medium text-gray-900">
+              <div key={project.id || index} className="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+                {/* 项目标题和时间 */}
+                <div className="mb-4">
+                  <div className="flex items-baseline justify-between mb-2">
+                    <h4 className="text-lg font-semibold text-gray-900">
                       {project.projectName || '未填写'}
-                      {(project.startDate || project.endDate) && (
-                        <span className="ml-2 text-xs text-gray-500 font-normal">
-                          {formatDate(project.startDate)} - {formatDate(project.endDate)}
-                        </span>
-                      )}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {project.companyName || '公司名称'} · {project.projectRole || '项目角色'}
-                    </p>
+                    </h4>
+                    <span className="text-sm text-gray-500 ml-4">
+                      {formatDate(project.startDate)}-{formatDate(project.endDate)}
+                    </span>
                   </div>
+                  <p className="text-base font-medium text-gray-700 mb-3">
+                    {project.projectRole || '项目角色'}
+                  </p>
                 </div>
 
-                {/* 展开内容 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-gray-100">
-                  {/* 项目名称 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      项目名称
-                    </label>
-                    <p className="text-gray-900 px-3 py-2 bg-gray-50 rounded-md">
-                      {project.projectName || '未填写'}
+                {/* 项目描述 */}
+                {project.projectDesc && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-gray-700 mb-2">项目描述：</p>
+                    <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
+                      {project.projectDesc}
                     </p>
                   </div>
+                )}
 
-                  {/* 所属公司 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      所属公司
-                    </label>
-                    <p className="text-gray-900 px-3 py-2 bg-gray-50 rounded-md">
-                      {project.companyName || '未填写'}
+                {/* 技术栈 */}
+                {project.technologies && (
+                  <div className="mb-4">
+                    <p className="text-gray-900 leading-relaxed">
+                      <span className="text-sm font-medium text-gray-700">技术栈：</span>
+                      {project.technologies}
                     </p>
                   </div>
+                )}
 
-                  {/* 项目角色 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      项目角色
-                    </label>
-                    <p className="text-gray-900 px-3 py-2 bg-gray-50 rounded-md">
-                      {project.projectRole || '未填写'}
+                {/* 项目职责 */}
+                {project.projectResponsibility && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-gray-700 mb-2">项目职责：</p>
+                    <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
+                      {project.projectResponsibility}
                     </p>
                   </div>
+                )}
 
-                  {/* 技术栈 */}
+                {/* 项目业绩 */}
+                {project.projectAchievement && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      技术栈
-                    </label>
-                    <p className="text-gray-900 px-3 py-2 bg-gray-50 rounded-md">
-                      {project.technologies || '未填写'}
+                    <p className="text-sm font-medium text-gray-700 mb-2">项目业绩：</p>
+                    <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
+                      {project.projectAchievement}
                     </p>
                   </div>
-
-                  {/* 开始时间 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      开始时间
-                    </label>
-                    <p className="text-gray-900 px-3 py-2 bg-gray-50 rounded-md">
-                      {formatDate(project.startDate) || '未填写'}
-                    </p>
-                  </div>
-
-                  {/* 结束时间 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      结束时间
-                    </label>
-                    <p className="text-gray-900 px-3 py-2 bg-gray-50 rounded-md">
-                      {formatDate(project.endDate) || '未填写'}
-                    </p>
-                  </div>
-
-                  {/* 项目描述 */}
-                  {project.projectDesc && (
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        项目描述
-                      </label>
-                      <p className="text-gray-900 px-3 py-2 bg-gray-50 rounded-md whitespace-pre-wrap">
-                        {project.projectDesc}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* 项目职责 */}
-                  {project.projectResponsibility && (
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        项目职责
-                      </label>
-                      <p className="text-gray-900 px-3 py-2 bg-gray-50 rounded-md whitespace-pre-wrap">
-                        {project.projectResponsibility}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* 项目业绩 */}
-                  {project.projectAchievement && (
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        项目业绩
-                      </label>
-                      <p className="text-gray-900 px-3 py-2 bg-gray-50 rounded-md whitespace-pre-wrap">
-                        {project.projectAchievement}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
             ))}
           </div>
