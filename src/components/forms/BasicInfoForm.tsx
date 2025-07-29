@@ -30,7 +30,6 @@ interface BasicInfoData {
   // 工作相关字段
   employmentStatus: string
   workYear: string
-  workStartDate: string
 }
 
 interface BasicInfoFormProps {
@@ -284,10 +283,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
       newErrors.email = '请输入正确的邮箱格式'
     }
 
-    // 参加工作时间必填
-    if (!formData.workStartDate?.trim()) {
-      newErrors.workStartDate = '请选择参加工作时间'
-    }
+
 
     // 在职状态必填
     if (!formData.employmentStatus?.trim()) {
@@ -556,21 +552,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
           </div>
         </div>
 
-        {/* 参加工作时间 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            参加工作时间 <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="date"
-            value={formData.workStartDate || ''}
-            onChange={(e) => handleChange('workStartDate', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.workStartDate ? 'border-red-500' : 'border-gray-300'
-            }`}
-          />
-          {errors.workStartDate && <p className="mt-1 text-sm text-red-500">{errors.workStartDate}</p>}
-        </div>
+
 
         {/* 在职状态 */}
         <div>

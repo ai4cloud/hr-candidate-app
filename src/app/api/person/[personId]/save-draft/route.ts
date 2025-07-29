@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@/generated/prisma'
 import { getDefaultTenantId } from '@/lib/config'
+import { processBasicInfo, calculateWorkInfoFromExperiences } from '@/lib/person-utils'
 
 const prisma = new PrismaClient()
 
@@ -46,38 +47,44 @@ export async function POST(
     const result = await prisma.$transaction(async (tx) => {
       // 1. 更新基本信息
       if (basicInfo) {
+        // 使用工具函数处理基本信息，自动计算相关字段
+        const processedBasicInfo = processBasicInfo(basicInfo)
+
         const updateData: Record<string, unknown> = {}
-        
+
         // 处理基本字段
-        if (basicInfo.name) updateData.name = basicInfo.name
-        if (basicInfo.gender) updateData.gender = basicInfo.gender
-        if (basicInfo.age) updateData.age = parseInt(basicInfo.age)
-        if (basicInfo.birthDate) updateData.birthDate = new Date(basicInfo.birthDate)
-        if (basicInfo.phone) updateData.phone = basicInfo.phone
-        if (basicInfo.email) updateData.email = basicInfo.email
-        if (basicInfo.idCard) updateData.idCard = basicInfo.idCard
-        if (basicInfo.nationality) updateData.nationality = basicInfo.nationality
-        if (basicInfo.ethnicity) updateData.ethnicity = basicInfo.ethnicity
-        if (basicInfo.politicalStatus) updateData.politicalStatus = basicInfo.politicalStatus
-        if (basicInfo.maritalStatus) updateData.maritalStatus = basicInfo.maritalStatus
-        if (basicInfo.city) updateData.city = basicInfo.city
-        if (basicInfo.jobType) updateData.jobType = basicInfo.jobType
-        if (basicInfo.availableDate) updateData.availableDate = basicInfo.availableDate
-        if (basicInfo.address) updateData.address = basicInfo.address
-        if (basicInfo.registeredAddress) updateData.registeredAddress = basicInfo.registeredAddress
-        if (basicInfo.avatarUrl) updateData.avatarUrl = basicInfo.avatarUrl
+        if (processedBasicInfo.name) updateData.name = processedBasicInfo.name
+        if (processedBasicInfo.gender) updateData.gender = processedBasicInfo.gender
+        if (processedBasicInfo.phone) updateData.phone = processedBasicInfo.phone
+        if (processedBasicInfo.email) updateData.email = processedBasicInfo.email
+        if (processedBasicInfo.idCard) updateData.idCard = processedBasicInfo.idCard
+        if (processedBasicInfo.nationality) updateData.nationality = processedBasicInfo.nationality
+        if (processedBasicInfo.ethnicity) updateData.ethnicity = processedBasicInfo.ethnicity
+        if (processedBasicInfo.politicalStatus) updateData.politicalStatus = processedBasicInfo.politicalStatus
+        if (processedBasicInfo.maritalStatus) updateData.maritalStatus = processedBasicInfo.maritalStatus
+        if (processedBasicInfo.city) updateData.city = processedBasicInfo.city
+        if (processedBasicInfo.jobType) updateData.jobType = processedBasicInfo.jobType
+        if (processedBasicInfo.availableDate) updateData.availableDate = processedBasicInfo.availableDate
+        if (processedBasicInfo.address) updateData.address = processedBasicInfo.address
+        if (processedBasicInfo.registeredAddress) updateData.registeredAddress = processedBasicInfo.registeredAddress
+        if (processedBasicInfo.avatarUrl) updateData.avatarUrl = processedBasicInfo.avatarUrl
 
         // 身份证照片字段
-        if (basicInfo.idCardFrontUrl) updateData.idCardFrontUrl = basicInfo.idCardFrontUrl
-        if (basicInfo.idCardBackUrl) updateData.idCardBackUrl = basicInfo.idCardBackUrl
+        if (processedBasicInfo.idCardFrontUrl) updateData.idCardFrontUrl = processedBasicInfo.idCardFrontUrl
+        if (processedBasicInfo.idCardBackUrl) updateData.idCardBackUrl = processedBasicInfo.idCardBackUrl
+
+        // 自动计算的字段
+        if (processedBasicInfo.birthDate) updateData.birthDate = new Date(processedBasicInfo.birthDate)
+        if (processedBasicInfo.age !== undefined && processedBasicInfo.age !== null) updateData.age = processedBasicInfo.age
 
         // 工作相关字段
-        if (basicInfo.employmentStatus) updateData.employmentStatus = basicInfo.employmentStatus
-        if (basicInfo.workYear) updateData.workYear = basicInfo.workYear
-        if (basicInfo.workStartDate) updateData.workStartDate = new Date(basicInfo.workStartDate)
+        if (processedBasicInfo.employmentStatus) updateData.employmentStatus = processedBasicInfo.employmentStatus
+        // 注意：workYear 和 workStartDate 现在通过工作经历自动计算，不在基本信息中更新
 
         // 添加更新时间
         updateData.updateTime = new Date()
+
+
 
         await tx.hrPerson.update({
           where: { id: BigInt(personId) },
@@ -123,16 +130,18 @@ export async function POST(
 
         // 插入新的教育经历
         for (const edu of educations) {
-          // 只有必填字段都有值才保存：学校名称、专业、学历、学位、开始时间、结束时间
-          if (edu.schoolName && edu.major && edu.educationLevel && edu.degree && edu.startDate && edu.endDate) {
+          // 需要学校名称和开始时间才能保存
+          if (edu.schoolName && edu.startDate) {
+            // 注意：不要传递id字段，数据库id是自增的
+            // 也不要传递personId字段，通过关系连接
             const educationData: Record<string, unknown> = {
-              personId: BigInt(personId),
-              schoolName: edu.schoolName,
-              major: edu.major,
-              educationLevel: edu.educationLevel,
-              degree: edu.degree,
-              startDate: new Date(edu.startDate),
-              endDate: new Date(edu.endDate),
+              schoolName: edu.schoolName,  // 对应数据库 school_name
+              // 数据库必填字段，草稿状态下提供默认值
+              major: edu.major || '',
+              educationLevel: edu.educationLevel || '',
+              degree: edu.degree || '',
+              startDate: new Date(edu.startDate), // startDate是必填的
+              endDate: edu.endDate ? new Date(edu.endDate) : null, // endDate可以为null表示至今
               isFullTime: edu.isFullTime !== undefined ? edu.isFullTime : true,
               tenantId: BigInt(getDefaultTenantId()),
               createTime: new Date(),
@@ -156,7 +165,12 @@ export async function POST(
             if (edu.degreeVerifyFile) educationData.degreeVerifyFile = edu.degreeVerifyFile
 
             await tx.hrPersonEducation.create({
-              data: educationData
+              data: {
+                ...educationData,
+                person: {
+                  connect: { id: BigInt(personId) }
+                }
+              }
             })
           }
         }
@@ -171,17 +185,23 @@ export async function POST(
         })
 
         // 插入新的工作经历
+        const validWorkExperiences = []
         for (const work of workExperiences) {
-          // 只有必填字段都有值才保存：开始时间、结束时间
-          if (work.startDate && work.endDate) {
+          // 只要有开始时间就保存，结束时间可以为空（在职状态）
+          if (work.startDate) {
             const workData: Record<string, unknown> = {
-              personId: BigInt(personId),
               startDate: new Date(work.startDate),
-              endDate: new Date(work.endDate),
               tenantId: BigInt(getDefaultTenantId()),
               createTime: new Date(),
               updateTime: new Date(),
               deleted: false
+            }
+
+            // 处理结束时间：如果有值就设置，否则设置为null（在职状态）
+            if (work.endDate) {
+              workData.endDate = new Date(work.endDate)
+            } else {
+              workData.endDate = null
             }
 
             // 处理可选字段
@@ -193,7 +213,42 @@ export async function POST(
             if (work.responsibilityPerformance) workData.responsibilityPerformance = work.responsibilityPerformance
 
             await tx.hrPersonWork.create({
-              data: workData
+              data: {
+                ...workData,
+                person: {
+                  connect: { id: BigInt(personId) }
+                }
+              }
+            })
+
+            // 收集有效的工作经历用于计算
+            validWorkExperiences.push({
+              startDate: work.startDate,
+              endDate: work.endDate
+            })
+          }
+        }
+
+        // 根据工作经历自动计算参加工作时间和工作年限
+        if (validWorkExperiences.length > 0) {
+          const { workStartDate, workYear } = calculateWorkInfoFromExperiences(validWorkExperiences)
+
+          const workInfoUpdate: Record<string, unknown> = {
+            updateTime: new Date()
+          }
+
+          if (workStartDate) {
+            workInfoUpdate.workStartDate = new Date(workStartDate)
+          }
+          if (workYear) {
+            workInfoUpdate.workYear = workYear
+          }
+
+          // 更新person表的工作信息
+          if (Object.keys(workInfoUpdate).length > 1) { // 除了updateTime还有其他字段
+            await tx.hrPerson.update({
+              where: { id: BigInt(personId) },
+              data: workInfoUpdate
             })
           }
         }
@@ -209,14 +264,14 @@ export async function POST(
 
         // 插入新的项目经历
         for (const project of projectExperiences) {
-          if (project.projectName && project.startDate && project.endDate) {
+          // 只要有项目名称和开始时间就保存，结束时间可以为空（进行中的项目）
+          if (project.projectName && project.startDate) {
             await tx.hrPersonProject.create({
               data: {
-                personId: BigInt(personId),
                 projectName: project.projectName,
                 companyName: project.companyName || null,
                 startDate: new Date(project.startDate),
-                endDate: new Date(project.endDate),
+                endDate: project.endDate ? new Date(project.endDate) : null,
                 technologies: project.technologies || null,
                 projectDesc: project.projectDesc || null,
                 projectRole: project.projectRole || null,
@@ -225,7 +280,10 @@ export async function POST(
                 tenantId: BigInt(getDefaultTenantId()),
                 createTime: new Date(),
                 updateTime: new Date(),
-                deleted: false
+                deleted: false,
+                person: {
+                  connect: { id: BigInt(personId) }
+                }
               }
             })
           }
@@ -351,8 +409,14 @@ export async function POST(
 
   } catch (error) {
     console.error('保存草稿失败:', error)
+    const errorMessage = error instanceof Error ? error.message : '未知错误'
     return NextResponse.json(
-      { success: false, message: '保存草稿失败' },
+      {
+        success: false,
+        message: '保存草稿失败',
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : String(error)
+      },
       { status: 500 }
     )
   }

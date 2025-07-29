@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react'
 import { Plus, Trash2, GraduationCap, Calendar, FileText, Upload, Eye, Download } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import FileUpload from '@/components/FileUpload'
+import DatePickerWithToday from '@/components/ui/DatePickerWithToday'
 
 // 教育经历数据类型 - 基于数据库表结构
 interface EducationData {
   id?: string
   schoolName: string
   startDate: string
-  endDate: string
+  endDate: string | null  // 支持null值表示"至今"
   major: string
   educationLevel: string
   degree: string
@@ -197,7 +198,12 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
 
   // 当外部数据更新时，同步内部状态
   useEffect(() => {
-    setEducations(data || [])
+    // 处理从API返回的数据，将空字符串的endDate转换为null
+    const processedData = (data || []).map(education => ({
+      ...education,
+      endDate: education.endDate === '' ? null : education.endDate
+    }))
+    setEducations(processedData)
   }, [data])
 
   // 监听自动展开事件
@@ -433,7 +439,7 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                     </label>
                     <input
                       type="text"
-                      value={education.schoolName}
+                      value={education.schoolName || ''}
                       onChange={(e) => updateEducation(index, 'schoolName', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="请输入学校名称"
@@ -450,7 +456,7 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                     </label>
                     <input
                       type="text"
-                      value={education.major}
+                      value={education.major || ''}
                       onChange={(e) => updateEducation(index, 'major', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="请输入专业"
@@ -466,7 +472,7 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                       学历 <span className="text-red-500">*</span>
                     </label>
                     <select
-                      value={education.educationLevel}
+                      value={education.educationLevel || ''}
                       onChange={(e) => updateEducation(index, 'educationLevel', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
@@ -488,7 +494,7 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                       学位 <span className="text-red-500">*</span>
                     </label>
                     <select
-                      value={education.degree}
+                      value={education.degree || ''}
                       onChange={(e) => updateEducation(index, 'degree', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
@@ -511,7 +517,7 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                     </label>
                     <input
                       type="date"
-                      value={education.startDate}
+                      value={education.startDate || ''}
                       onChange={(e) => updateEducation(index, 'startDate', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
@@ -522,34 +528,14 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
 
                   {/* 毕业时间 */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      毕业时间 <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={education.endDate === null ? "text" : "date"}
-                        value={education.endDate === null ? "至今" : (education.endDate || '')}
-                        onChange={(e) => education.endDate !== null && updateEducation(index, 'endDate', e.target.value)}
-                        readOnly={education.endDate === null}
-                        className={`w-full px-3 py-2 pr-12 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          education.endDate === null ? 'bg-gray-50 text-gray-700' : ''
-                        }`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => updateEducation(index, 'endDate', education.endDate === null ? '' : null)}
-                        className={`absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs rounded transition-colors ${
-                          education.endDate === null
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
-                      >
-                        至今
-                      </button>
-                    </div>
-                    {errors[index]?.endDate && (
-                      <p className="text-red-500 text-sm mt-1">{errors[index].endDate}</p>
-                    )}
+                    <DatePickerWithToday
+                      label="毕业时间"
+                      required
+                      value={education.endDate}
+                      onChange={(value) => updateEducation(index, 'endDate', value)}
+                      placeholder="请选择毕业时间"
+                      error={errors[index]?.endDate}
+                    />
                   </div>
 
                   {/* 是否统招 */}
@@ -571,7 +557,7 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                       在校情况
                     </label>
                     <textarea
-                      value={education.schoolExperience}
+                      value={education.schoolExperience || ''}
                       onChange={(e) => updateEducation(index, 'schoolExperience', e.target.value)}
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

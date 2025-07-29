@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import BasicInfoForm from '@/components/forms/BasicInfoForm'
 import JobExpectationForm from '@/components/forms/JobExpectationForm'
@@ -44,6 +44,9 @@ export default function FormPage() {
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [isBasicInfoValid, setIsBasicInfoValid] = useState(true)
+
+  // 防抖保存的引用
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const params = useParams()
   const router = useRouter()
@@ -188,6 +191,25 @@ export default function FormPage() {
     }
   }
 
+  // 防抖保存函数
+  const debouncedSave = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      handleAutoSave()
+    }, 1000) // 1秒防抖延迟
+  }, [])
+
+  // 清理防抖定时器
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [])
+
   // 自动保存函数
   const handleAutoSave = async () => {
     if (!personId || saving) {
@@ -214,6 +236,8 @@ export default function FormPage() {
         languages
       })
 
+      console.log('发送保存请求，personId:', personId)
+
       const response = await fetch(`/api/person/${personId}/save-draft`, {
         method: 'POST',
         headers: {
@@ -232,8 +256,12 @@ export default function FormPage() {
         })
       })
 
+      console.log('API响应状态:', response.status, response.statusText)
+
       if (!response.ok) {
-        throw new Error('保存失败')
+        const errorText = await response.text()
+        console.error('API错误响应:', errorText)
+        throw new Error(`保存失败: ${response.status} ${response.statusText}`)
       }
 
       const result = await response.json()
@@ -262,29 +290,29 @@ export default function FormPage() {
   // 处理求职期望变化
   const handleJobExpectationChange = async (data: any) => {
     setJobExpectations(data)
-    // 立即保存到数据库
-    setTimeout(() => handleAutoSave(), 100) // 延迟100ms确保状态更新完成
+    // 使用防抖延迟保存，避免频繁触发
+    debouncedSave()
   }
 
   // 处理教育经历变化
   const handleEducationChange = async (data: any) => {
     setEducations(data)
-    // 立即保存到数据库
-    setTimeout(() => handleAutoSave(), 100) // 延迟100ms确保状态更新完成
+    // 使用防抖延迟保存，避免频繁触发
+    debouncedSave()
   }
 
   // 处理工作经历变化
   const handleWorkExperienceChange = async (data: any) => {
     setWorkExperiences(data)
-    // 立即保存到数据库
-    setTimeout(() => handleAutoSave(), 100) // 延迟100ms确保状态更新完成
+    // 使用防抖延迟保存，避免频繁触发
+    debouncedSave()
   }
 
   // 处理项目经历变化
   const handleProjectExperienceChange = async (data: any) => {
     setProjectExperiences(data)
-    // 立即保存到数据库
-    setTimeout(() => handleAutoSave(), 100) // 延迟100ms确保状态更新完成
+    // 使用防抖延迟保存，避免频繁触发
+    debouncedSave()
   }
 
   // 处理滑动切换
@@ -343,13 +371,15 @@ export default function FormPage() {
             onClick={() => {
               // 触发教育经历添加逻辑
               const newEducation = {
-                id: Date.now(),
-                school: '',
-                major: '',
-                degree: '',
+                id: `temp_${Date.now()}`,
+                schoolName: '',
                 startDate: '',
                 endDate: '',
-                description: ''
+                major: '',
+                educationLevel: '',
+                degree: '',
+                isFullTime: true,
+                schoolExperience: ''
               }
               setEducations(prev => {
                 const newList = [...prev, newEducation]
@@ -378,12 +408,12 @@ export default function FormPage() {
             onClick={() => {
               // 触发工作经历添加逻辑
               const newWorkExperience = {
-                id: Date.now().toString(),
+                id: `temp_${Date.now()}`,
                 companyName: '',
-                position: '',
-                industry: '',
                 startDate: '',
                 endDate: '',
+                industry: '',
+                position: '',
                 location: '',
                 department: '',
                 responsibilityPerformance: ''

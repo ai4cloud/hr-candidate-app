@@ -139,7 +139,7 @@ model HrPersonEducation {
   personId              BigInt    @map("person_id")
   schoolName            String    @map("school_name") @db.VarChar(200)
   startDate             DateTime  @map("start_date") @db.Date
-  endDate               DateTime  @map("end_date") @db.Date
+  endDate               DateTime? @map("end_date") @db.Date
   major                 String    @db.VarChar(100)
   educationLevel        String    @map("education_level") @db.VarChar(50)
   degree                String    @db.VarChar(50)
@@ -172,7 +172,7 @@ model HrPersonWork {
   personId                   BigInt    @map("person_id")
   companyName                String?   @map("company_name") @db.VarChar(200)
   startDate                  DateTime  @map("start_date") @db.Date
-  endDate                    DateTime  @map("end_date") @db.Date
+  endDate                    DateTime? @map("end_date") @db.Date
   industry                   String?   @db.VarChar(100)
   position                   String?   @db.VarChar(100)
   location                   String?   @db.VarChar(100)
@@ -198,7 +198,7 @@ model HrPersonProject {
   projectName           String?   @map("project_name") @db.VarChar(200)
   companyName           String?   @map("company_name") @db.VarChar(200)
   startDate             DateTime  @map("start_date") @db.Date
-  endDate               DateTime  @map("end_date") @db.Date
+  endDate               DateTime? @map("end_date") @db.Date
   technologies          String?   @db.VarChar(1000)
   projectDesc           String?   @map("project_desc") @db.VarChar(2000)
   projectRole           String?   @map("project_role") @db.VarChar(50)

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Code, Calendar, FileText } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import DatePickerWithToday from '@/components/ui/DatePickerWithToday'
 
 // 项目经历数据类型 - 基于数据库表结构
 interface ProjectExperienceData {
@@ -30,7 +31,7 @@ export default function ProjectExperienceForm({ data, onChange }: ProjectExperie
     projectName: project.projectName || '',
     companyName: project.companyName || '',
     startDate: project.startDate || '',
-    endDate: project.endDate === undefined ? '' : project.endDate,  // 保持null值，只处理undefined
+    endDate: project.endDate === undefined ? '' : (project.endDate === '' ? null : project.endDate),  // 将空字符串转换为null
     technologies: project.technologies || '',
     projectDesc: project.projectDesc || '',
     projectRole: project.projectRole || '',
@@ -323,36 +324,19 @@ export default function ProjectExperienceForm({ data, onChange }: ProjectExperie
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        <Calendar className="w-4 h-4 inline mr-1" />
-                        结束时间 <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={project.endDate === null ? "text" : "date"}
-                          value={project.endDate === null ? "至今" : (project.endDate || '')}
-                          onChange={(e) => project.endDate !== null && updateProjectExperience(index, 'endDate', e.target.value)}
-                          onBlur={(e) => project.endDate !== null && handleFieldBlur(index, 'endDate', e.target.value)}
-                          readOnly={project.endDate === null}
-                          className={`w-full px-3 py-2 pr-12 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                            project.endDate === null ? 'bg-gray-50 text-gray-700' : ''
-                          }`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => updateProjectExperience(index, 'endDate', project.endDate === null ? '' : null)}
-                          className={`absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs rounded transition-colors ${
-                            project.endDate === null
-                              ? 'bg-blue-500 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}
-                        >
-                          至今
-                        </button>
-                      </div>
-                      {errors[index]?.endDate && (
-                        <p className="mt-1 text-sm text-red-600">{errors[index].endDate}</p>
-                      )}
+                      <DatePickerWithToday
+                        label={
+                          <span className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            结束时间
+                          </span>
+                        }
+                        required
+                        value={project.endDate}
+                        onChange={(value) => updateProjectExperience(index, 'endDate', value)}
+                        placeholder="请选择结束时间"
+                        error={errors[index]?.endDate}
+                      />
                     </div>
                   </div>
 

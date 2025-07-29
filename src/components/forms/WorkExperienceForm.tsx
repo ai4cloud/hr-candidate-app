@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Briefcase } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import DatePickerWithToday from '@/components/ui/DatePickerWithToday'
 
 // 工作经历数据类型 - 基于数据库表结构
 interface WorkExperienceData {
   id?: string
   companyName: string
   startDate: string
-  endDate: string
+  endDate: string | null  // 支持null值表示"在职"
   industry: string
   position: string
   location: string
@@ -40,7 +41,12 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
 
   // 同步外部数据变化
   useEffect(() => {
-    setWorkExperiences(data || [])
+    // 处理从API返回的数据，将空字符串的endDate转换为null
+    const processedData = (data || []).map(work => ({
+      ...work,
+      endDate: work.endDate === '' ? null : work.endDate
+    }))
+    setWorkExperiences(processedData)
   }, [data])
 
   // 监听自动展开事件
@@ -296,34 +302,14 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
 
                   {/* 离职时间 */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      离职时间 <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={workExperience.endDate === null ? "text" : "date"}
-                        value={workExperience.endDate === null ? "至今" : (workExperience.endDate || '')}
-                        onChange={(e) => workExperience.endDate !== null && updateWorkExperience(index, 'endDate', e.target.value)}
-                        readOnly={workExperience.endDate === null}
-                        className={`w-full px-3 py-2 pr-12 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                          workExperience.endDate === null ? 'bg-gray-50 text-gray-700' : ''
-                        }`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => updateWorkExperience(index, 'endDate', workExperience.endDate === null ? '' : null)}
-                        className={`absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs rounded transition-colors ${
-                          workExperience.endDate === null
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
-                      >
-                        至今
-                      </button>
-                    </div>
-                    {errors[index]?.endDate && (
-                      <p className="text-red-500 text-sm mt-1">{errors[index].endDate}</p>
-                    )}
+                    <DatePickerWithToday
+                      label="离职时间"
+                      required
+                      value={workExperience.endDate}
+                      onChange={(value) => updateWorkExperience(index, 'endDate', value)}
+                      placeholder="请选择离职时间"
+                      error={errors[index]?.endDate}
+                    />
                   </div>
 
                   {/* 所属部门 */}
