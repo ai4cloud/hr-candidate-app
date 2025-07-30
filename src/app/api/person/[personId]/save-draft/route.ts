@@ -126,6 +126,24 @@ export async function POST(
       languages?: Array<Record<string, unknown>>
     } = body
 
+    // 在事务外部进行工作经历校验
+    if (workExperiences && Array.isArray(workExperiences)) {
+      // 校验：只允许一个离职时间为null或空字符串的记录（至今的工作经历）
+      const currentWorkCount = workExperiences.filter(work =>
+        work.endDate === null || work.endDate === '' || work.endDate === undefined
+      ).length
+
+      if (currentWorkCount > 1) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: '只能有一个当前在职的工作经历，请检查结束时间设置'
+          },
+          { status: 400 }
+        )
+      }
+    }
+
     // 开始事务
     const result = await prisma.$transaction(async (tx) => {
       // 1. 更新基本信息
@@ -264,6 +282,7 @@ export async function POST(
 
       // 4. 更新工作经历（如果有数据）
       if (workExperiences && Array.isArray(workExperiences)) {
+
         // 先软删除现有的工作经历
         await tx.hrPersonWork.updateMany({
           where: { personId: BigInt(personId) },
@@ -272,6 +291,8 @@ export async function POST(
 
         // 插入新的工作经历
         const validWorkExperiences = []
+        let currentWork = null // 用于存储当前在职的工作经历
+
         for (const work of workExperiences) {
           // 只要有开始时间就保存，结束时间可以为空（在职状态）
           if (work.startDate) {
@@ -312,6 +333,14 @@ export async function POST(
               startDate: work.startDate,
               endDate: work.endDate
             })
+
+            // 如果是当前在职的工作经历（endDate为null或空字符串），记录下来
+            if (work.endDate === null || work.endDate === '' || work.endDate === undefined) {
+              currentWork = {
+                companyName: work.companyName,
+                position: work.position
+              }
+            }
           }
         }
 
@@ -335,6 +364,28 @@ export async function POST(
             await tx.hrPerson.update({
               where: { id: BigInt(personId) },
               data: workInfoUpdate
+            })
+          }
+        }
+
+        // 推断当前公司和职位：如果基本信息中在职状态为"在职"，且有当前工作经历
+        if (currentWork && basicInfo && basicInfo.employmentStatus === 'employed') {
+          const currentCompanyUpdate: Record<string, unknown> = {
+            updateTime: new Date()
+          }
+
+          if (currentWork.companyName) {
+            currentCompanyUpdate.companyName = currentWork.companyName
+          }
+          if (currentWork.position) {
+            currentCompanyUpdate.position = currentWork.position
+          }
+
+          // 更新当前公司和职位信息
+          if (Object.keys(currentCompanyUpdate).length > 1) { // 除了updateTime还有其他字段
+            await tx.hrPerson.update({
+              where: { id: BigInt(personId) },
+              data: currentCompanyUpdate
             })
           }
         }

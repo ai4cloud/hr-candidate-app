@@ -173,8 +173,58 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
       workExperienceErrors.endDate = '离职时间不能早于入职时间'
     }
 
+    // 检查是否有多个"至今"的工作记录
+    if (workExperience.endDate === null) {
+      const currentWorkCount = workExperiences.filter((work, idx) =>
+        idx !== index && work.endDate === null
+      ).length
+
+      if (currentWorkCount > 0) {
+        workExperienceErrors.endDate = '只能有一个当前在职的工作经历，请设置其他工作的结束时间'
+      }
+    }
+
     return workExperienceErrors
   }
+
+  // 全局验证所有工作经历
+  const validateAllWorkExperiences = () => {
+    const newErrors: Record<number, Record<string, string>> = {}
+    let hasErrors = false
+
+    // 检查是否有多个"至今"的工作记录
+    const currentWorkIndexes = workExperiences
+      .map((work, index) => work.endDate === null ? index : -1)
+      .filter(index => index !== -1)
+
+    if (currentWorkIndexes.length > 1) {
+      // 为所有"至今"的记录添加错误信息
+      currentWorkIndexes.forEach(index => {
+        if (!newErrors[index]) newErrors[index] = {}
+        newErrors[index].endDate = '只能有一个当前在职的工作经历，请设置结束时间'
+        hasErrors = true
+      })
+    }
+
+    // 验证每个工作经历的其他字段
+    workExperiences.forEach((work, index) => {
+      const workErrors = validateWorkExperience(work, index)
+      if (Object.keys(workErrors).length > 0) {
+        newErrors[index] = { ...newErrors[index], ...workErrors }
+        hasErrors = true
+      }
+    })
+
+    setErrors(newErrors)
+    return !hasErrors
+  }
+
+  // 暴露验证函数给父组件
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).validateWorkExperiences = validateAllWorkExperiences
+    }
+  }, [workExperiences])
 
   return (
     <div className="space-y-6">

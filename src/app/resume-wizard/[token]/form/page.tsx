@@ -367,6 +367,17 @@ export default function FormPage() {
   // 处理工作经历变化
   const handleWorkExperienceChange = async (data: any) => {
     setWorkExperiences(data)
+
+    // 检查是否有多个"至今"的工作记录
+    const currentWorkCount = data.filter((work: any) => !work.endDate).length
+    if (currentWorkCount > 1) {
+      setSaveMessage({
+        type: 'error',
+        text: '只能有一个当前在职的工作经历，请检查结束时间设置'
+      })
+      return
+    }
+
     // 使用防抖延迟保存，避免频繁触发
     debouncedSave()
   }
