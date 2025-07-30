@@ -44,6 +44,9 @@ export default function FormPage() {
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [isBasicInfoValid, setIsBasicInfoValid] = useState(true)
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [showCloseHint, setShowCloseHint] = useState(false)
 
   // 防抖保存的引用
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -119,6 +122,12 @@ export default function FormPage() {
             workYear: result.data.person.workYear || '',
             workStartDate: result.data.person.workStartDate || ''
           })
+
+          // 检查是否已提交
+          if (result.data.person.recordStatus === 'submitted') {
+            setIsSubmitted(true)
+            setCurrentStep(STEPS.length - 1) // 直接跳转到预览页面
+          }
         }
 
         // 设置其他数据
@@ -281,6 +290,58 @@ export default function FormPage() {
       setSaveMessage({ type: 'error', text: error instanceof Error ? error.message : '保存失败，请重试' })
     } finally {
       setSaving(false)
+    }
+  }
+
+  // 提交简历函数
+  const handleSubmit = async () => {
+    if (!personId || submitting) {
+      return
+    }
+
+    try {
+      setSubmitting(true)
+
+      // 先保存当前数据
+      await handleAutoSave()
+
+      // 提交简历
+      const response = await fetch(`/api/person/${personId}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('提交失败')
+      }
+
+      const result = await response.json()
+      if (result.success) {
+        console.log('提交成功:', result.message)
+        setIsSubmitted(true)
+        setSaveMessage({ type: 'success', text: '简历提交成功！' })
+      } else {
+        throw new Error(result.message || '提交失败')
+      }
+    } catch (error) {
+      console.error('提交失败:', error)
+      setSaveMessage({ type: 'error', text: error instanceof Error ? error.message : '提交失败，请重试' })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  // 关闭页面函数
+  const handleClosePage = () => {
+    // 尝试关闭窗口
+    if (window.opener) {
+      // 如果是弹窗打开的，可以关闭
+      window.close()
+    } else {
+      // 如果是直接访问的，显示友好的提示界面
+      setShowCloseHint(true)
     }
   }
 
@@ -577,11 +638,13 @@ export default function FormPage() {
     <div className="min-h-screen bg-gray-50">
       {/* 顶部导航栏 - 固定在顶部 */}
       <div className="fixed top-0 left-0 right-0 bg-white shadow-sm border-b z-30">
-        <div className="px-4 py-4 pl-72">
+        <div className={`px-4 py-4 ${isSubmitted ? '' : 'pl-72'}`}>
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900">简历信息填写</h1>
+            <h1 className="text-xl font-semibold text-gray-900">
+              {isSubmitted ? '简历信息' : '简历信息填写'}
+            </h1>
             <div className="text-sm text-gray-500">
-              {lastSaveTime && (
+              {lastSaveTime && !isSubmitted && (
                 <span>最后保存: {lastSaveTime.toLocaleTimeString()}</span>
               )}
             </div>
@@ -590,7 +653,8 @@ export default function FormPage() {
       </div>
 
       {/* 左侧步骤导航 - 固定侧边栏 */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-white border-r shadow-lg z-20 overflow-y-auto">
+      {!isSubmitted && (
+        <div className="fixed left-0 top-0 h-full w-64 bg-white border-r shadow-lg z-20 overflow-y-auto">
         <div className="p-4 pt-20">
           <h2 className="text-base font-semibold text-gray-900 mb-4">填写步骤</h2>
           <nav className="space-y-1">
@@ -623,27 +687,30 @@ export default function FormPage() {
             ))}
           </nav>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* 主要内容区域 */}
-      <div className="ml-64 px-6 py-6 pt-24">
+      <div className={`px-6 py-6 pt-24 ${isSubmitted ? '' : 'ml-64'}`}>
         <div className="max-w-5xl">
           <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="mb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-                    <span className="text-2xl mr-3">{STEPS[currentStep].icon}</span>
-                    {STEPS[currentStep].title}
-                  </h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    步骤 {currentStep + 1} / {STEPS.length}
-                  </p>
+            {!isSubmitted && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                      <span className="text-2xl mr-3">{STEPS[currentStep].icon}</span>
+                      {STEPS[currentStep].title}
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-1">
+                      步骤 {currentStep + 1} / {STEPS.length}
+                    </p>
+                  </div>
+                  {/* 添加按钮区域 - 根据当前步骤显示对应的添加按钮 */}
+                  {renderAddButton()}
                 </div>
-                {/* 添加按钮区域 - 根据当前步骤显示对应的添加按钮 */}
-                {renderAddButton()}
               </div>
-            </div>
+            )}
 
           {/* 步骤内容 */}
           <div className="min-h-96">
@@ -653,7 +720,8 @@ export default function FormPage() {
 
 
           {/* 底部导航按钮 */}
-          <div className="flex justify-between items-center mt-8 pt-6 border-t">
+          {!isSubmitted && (
+            <div className="flex justify-between items-center mt-8 pt-6 border-t">
             <button
               onClick={() => handleStepChange(currentStep - 1)}
               disabled={currentStep === 0}
@@ -696,9 +764,24 @@ export default function FormPage() {
               </button>
               
               {currentStep === STEPS.length - 1 ? (
-                <button className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                  提交简历
-                </button>
+                isSubmitted ? (
+                  <button
+                    onClick={handleClosePage}
+                    className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                  >
+                    关闭页面
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                    className={`px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 ${
+                      submitting ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {submitting ? '提交中...' : '提交简历'}
+                  </button>
+                )
               ) : (
                 <button
                   onClick={() => handleStepChange(currentStep + 1)}
@@ -708,10 +791,66 @@ export default function FormPage() {
                 </button>
               )}
             </div>
-          </div>
+            </div>
+          )}
+
+          {/* 已提交状态下的关闭按钮 */}
+          {isSubmitted && (
+            <div className="flex justify-center mt-8 pt-6 border-t">
+              <button
+                onClick={handleClosePage}
+                className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+              >
+                关闭页面
+              </button>
+            </div>
+          )}
           </div>
         </div>
       </div>
+
+      {/* 关闭页面提示模态框 */}
+      {showCloseHint && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <div className="text-center">
+              <div className="mb-4">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                  <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                简历提交成功！
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                感谢您完成简历信息填写。HR将会审核您的信息并与您联系。
+              </p>
+              <div className="bg-gray-50 rounded-md p-4 mb-4">
+                <p className="text-sm text-gray-700 mb-2">
+                  <strong>关闭此页面：</strong>
+                </p>
+                <p className="text-sm text-gray-600">
+                  • Windows/Linux: 按 <kbd className="px-2 py-1 bg-gray-200 rounded text-xs">Ctrl + W</kbd>
+                </p>
+                <p className="text-sm text-gray-600">
+                  • Mac: 按 <kbd className="px-2 py-1 bg-gray-200 rounded text-xs">Cmd + W</kbd>
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  或直接关闭浏览器标签页
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCloseHint(false)}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                我知道了
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

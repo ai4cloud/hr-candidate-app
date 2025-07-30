@@ -42,12 +42,14 @@ interface JobExpectationData {
 
 interface EducationData {
   id: string
-  school: string
+  schoolName: string
   major: string
   degree: string
+  educationLevel: string
   startDate: string
   endDate: string
-  description: string
+  schoolExperience: string
+  isFullTime: boolean
   educationCertFile: string
   educationVerifyFile: string
   degreeCertFile: string
@@ -56,12 +58,15 @@ interface EducationData {
 
 interface WorkExperienceData {
   id: string
-  company: string
+  companyName: string
   position: string
+  industry: string
+  location: string
+  department: string
+  responsibilityPerformance: string
   startDate: string
   endDate: string
   description: string
-  isCurrent: boolean
 }
 
 interface ProjectExperienceData {
@@ -428,18 +433,11 @@ export default function PreviewForm({ data }: PreviewFormProps) {
                   </h4>
                   <p className="text-base font-medium text-gray-700 mb-3">
                     {education.major || '专业'} · {getDictLabel('education_level', education.educationLevel)} · {getDictLabel('degree', education.degree)}
+                    {education.isFullTime !== undefined && (
+                      <> · {education.isFullTime ? '统招' : '非统招'}</>
+                    )}
                   </p>
                 </div>
-
-                {/* 是否统招 */}
-                {education.isFullTime !== undefined && (
-                  <div className="mb-4">
-                    <p className="text-gray-900 leading-relaxed">
-                      <span className="text-sm font-medium text-gray-700">是否统招：</span>
-                      {education.isFullTime ? '是' : '否'}
-                    </p>
-                  </div>
-                )}
 
                 {/* 在校情况 */}
                 {education.schoolExperience && (
