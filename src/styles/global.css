@@ -1,0 +1,4 @@
+/* 如果没有这个文件，请创建它 */
+.nowrap-label {
+  flex-wrap: nowrap;
+}
