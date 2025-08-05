@@ -30,6 +30,8 @@ interface PersonData {
   educationLevel: string
   degree: string
   school: string
+  companyName: string
+  position: string
 }
 
 interface JobExpectationData {
@@ -310,12 +312,12 @@ export default function PreviewForm({ data }: PreviewFormProps) {
             <p className="text-gray-900">{person.city || '未填写'}</p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-500">民族</label>
-            <p className="text-gray-900">{getDictLabel('ethnicity', person.ethnicity)}</p>
-          </div>
-          <div>
             <label className="text-sm font-medium text-gray-500">国籍</label>
             <p className="text-gray-900">{getDictLabel('nationality', person.nationality)}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-500">民族</label>
+            <p className="text-gray-900">{getDictLabel('ethnicity', person.ethnicity)}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">政治面貌</label>
@@ -330,8 +332,12 @@ export default function PreviewForm({ data }: PreviewFormProps) {
             <p className="text-gray-900">{getDictLabel('employment_status', person.employmentStatus)}</p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-500">求职类型</label>
-            <p className="text-gray-900">{getDictLabel('job_type', person.jobType)}</p>
+            <label className="text-sm font-medium text-gray-500">当前公司</label>
+            <p className="text-gray-900">{person.companyName || '未填写'}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-500">当前职位</label>
+            <p className="text-gray-900">{person.position || '未填写'}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">最高学历</label>
@@ -344,6 +350,18 @@ export default function PreviewForm({ data }: PreviewFormProps) {
           <div>
             <label className="text-sm font-medium text-gray-500">毕业学校</label>
             <p className="text-gray-900">{person.school || '未填写'}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-500">参加工作时间</label>
+            <p className="text-gray-900">{formatDate(person.workStartDate)}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-500">工作年限</label>
+            <p className="text-gray-900">{person.workYear || '未填写'}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-500">求职类型</label>
+            <p className="text-gray-900">{getDictLabel('job_type', person.jobType)}</p>
           </div>
         </div>
 

@@ -296,8 +296,6 @@ function formatWorkYearFromMonths(totalMonths: number): string {
     return '应届毕业生'
   } else if (totalMonths < 12) {
     return `${totalMonths}个月`
-  } else if (totalMonths < 12) {
-    return '1年以下'
   } else {
     const years = Math.floor(totalMonths / 12)
     if (years >= 10) {

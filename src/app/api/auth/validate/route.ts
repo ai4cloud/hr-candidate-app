@@ -22,8 +22,9 @@ export async function POST(request: NextRequest) {
     // 验证token
     const tokenData = validateToken(token)
 
-    // 验证手机号是否匹配
-    if (tokenData.mobile !== phone) {
+    // 对于新格式token（包含ID），优先使用ID验证，允许手机号为空或不匹配
+    // 对于旧格式token，严格验证手机号匹配
+    if (!tokenData.id && tokenData.mobile !== phone) {
       return NextResponse.json(
         {
           error: '手机号验证失败',
@@ -41,10 +42,18 @@ export async function POST(request: NextRequest) {
       person = await prisma.hrPerson.findFirst({
         where: {
           id: BigInt(tokenData.id),
-          phone: phone,
           deleted: false
         }
       })
+
+      // 如果找到候选人，更新手机号（如果数据库中为空且用户提供了手机号）
+      if (person && !person.phone && phone) {
+        console.log('更新候选人手机号:', phone)
+        person = await prisma.hrPerson.update({
+          where: { id: BigInt(tokenData.id) },
+          data: { phone: phone, updateTime: new Date() }
+        })
+      }
     } else {
       // 旧格式：使用手机号和token查找候选人记录
       console.log('使用旧格式token查找候选人，手机号:', phone)

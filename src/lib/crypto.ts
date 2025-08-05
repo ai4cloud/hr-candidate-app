@@ -94,9 +94,16 @@ export function validateToken(token: string): { id?: number; mobile: string; exp
     console.log('解密成功，数据长度:', decryptedData.length)
     const tokenData = JSON.parse(decryptedData)
 
-    // 检查必要字段（mobile和expires是必须的）
-    if (!tokenData.mobile || !tokenData.expires) {
-      throw new Error('Token格式无效，缺少必要字段')
+    // 检查必要字段
+    // 对于新格式token（包含id），expires是必须的，mobile可以为空
+    // 对于旧格式token，mobile和expires都是必须的
+    if (!tokenData.expires) {
+      console.log('缺少expires字段:', { expires: tokenData.expires })
+      throw new Error('Token格式无效，缺少expires字段')
+    }
+
+    if (!tokenData.id && !tokenData.mobile) {
+      throw new Error('Token格式无效，缺少mobile字段')
     }
 
     // 检查是否过期

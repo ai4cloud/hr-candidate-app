@@ -429,10 +429,9 @@ export async function POST(
 
       // 6. 更新技能特长（如果有数据）
       if (skills && Array.isArray(skills)) {
-        // 先软删除现有的技能
-        await tx.hrPersonSkill.updateMany({
-          where: { personId: BigInt(personId) },
-          data: { deleted: true, updateTime: new Date() }
+        // 先物理删除现有的技能记录（避免唯一约束冲突）
+        await tx.hrPersonSkill.deleteMany({
+          where: { personId: BigInt(personId) }
         })
 
         // 插入新的技能
@@ -444,6 +443,7 @@ export async function POST(
                 skillName: skill.skillName,
                 proficiencyLevel: skill.proficiencyLevel || null,
                 sourceType: skill.sourceType || 'manual',
+                tenantId: BigInt(getDefaultTenantId()),
                 createTime: new Date(),
                 updateTime: new Date(),
                 deleted: false
