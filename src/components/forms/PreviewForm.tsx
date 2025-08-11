@@ -328,8 +328,16 @@ export default function PreviewForm({ data }: PreviewFormProps) {
             <p className="text-gray-900">{person.email || '未填写'}</p>
           </div>
           <div>
+            <label className="text-sm font-medium text-gray-500">微信号</label>
+            <p className="text-gray-900">{person.wechat || '未填写'}</p>
+          </div>
+          <div>
             <label className="text-sm font-medium text-gray-500">现居城市</label>
             <p className="text-gray-900">{person.city || '未填写'}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-500">籍贯</label>
+            <p className="text-gray-900">{person.nativePlace || '未填写'}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-500">国籍</label>
@@ -396,6 +404,16 @@ export default function PreviewForm({ data }: PreviewFormProps) {
             <p className="text-gray-900">{person.registeredAddress || '未填写'}</p>
           </div>
         </div>
+
+        {/* 优势亮点 */}
+        {person.highlights && (
+          <div className="mt-6">
+            <label className="text-sm font-medium text-gray-500">优势亮点</label>
+            <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+              <p className="text-gray-900 whitespace-pre-wrap">{person.highlights}</p>
+            </div>
+          </div>
+        )}
 
         {/* 身份证照片 */}
         {(person.idCardFrontUrl || person.idCardBackUrl) && (

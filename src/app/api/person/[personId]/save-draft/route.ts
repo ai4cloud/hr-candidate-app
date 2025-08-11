@@ -157,6 +157,7 @@ export async function POST(
         if (processedBasicInfo.name) updateData.name = processedBasicInfo.name
         if (processedBasicInfo.gender) updateData.gender = processedBasicInfo.gender
         if (processedBasicInfo.phone) updateData.phone = processedBasicInfo.phone
+        if (processedBasicInfo.wechat) updateData.wechat = processedBasicInfo.wechat
         if (processedBasicInfo.email) updateData.email = processedBasicInfo.email
         if (processedBasicInfo.idCard) updateData.idCard = processedBasicInfo.idCard
         if (processedBasicInfo.nationality) updateData.nationality = processedBasicInfo.nationality
@@ -164,10 +165,12 @@ export async function POST(
         if (processedBasicInfo.politicalStatus) updateData.politicalStatus = processedBasicInfo.politicalStatus
         if (processedBasicInfo.maritalStatus) updateData.maritalStatus = processedBasicInfo.maritalStatus
         if (processedBasicInfo.city) updateData.city = processedBasicInfo.city
+        if (processedBasicInfo.nativePlace) updateData.nativePlace = processedBasicInfo.nativePlace
         if (processedBasicInfo.jobType) updateData.jobType = processedBasicInfo.jobType
         if (processedBasicInfo.availableDate) updateData.availableDate = processedBasicInfo.availableDate
         if (processedBasicInfo.address) updateData.address = processedBasicInfo.address
         if (processedBasicInfo.registeredAddress) updateData.registeredAddress = processedBasicInfo.registeredAddress
+        if (processedBasicInfo.highlights) updateData.highlights = processedBasicInfo.highlights
         if (processedBasicInfo.avatarUrl) updateData.avatarUrl = processedBasicInfo.avatarUrl
 
         // 身份证照片字段

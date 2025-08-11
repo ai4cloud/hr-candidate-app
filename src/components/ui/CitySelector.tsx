@@ -24,20 +24,20 @@ interface Province {
   cities: City[]
 }
 
-// 热门城市
+// 热门城市（包含省份信息）
 const HOT_CITIES: City[] = [
-  { name: '北京', code: 'beijing' },
-  { name: '上海', code: 'shanghai' },
-  { name: '广州', code: 'guangzhou' },
-  { name: '深圳', code: 'shenzhen' },
-  { name: '杭州', code: 'hangzhou' },
-  { name: '南京', code: 'nanjing' },
-  { name: '武汉', code: 'wuhan' },
-  { name: '成都', code: 'chengdu' },
-  { name: '西安', code: 'xian' },
-  { name: '重庆', code: 'chongqing' },
-  { name: '天津', code: 'tianjin' },
-  { name: '苏州', code: 'suzhou' }
+  { name: '北京', code: 'beijing', province: '北京' },
+  { name: '上海', code: 'shanghai', province: '上海' },
+  { name: '广州', code: 'guangzhou', province: '广东' },
+  { name: '深圳', code: 'shenzhen', province: '广东' },
+  { name: '杭州', code: 'hangzhou', province: '浙江' },
+  { name: '南京', code: 'nanjing', province: '江苏' },
+  { name: '武汉', code: 'wuhan', province: '湖北' },
+  { name: '成都', code: 'chengdu', province: '四川' },
+  { name: '西安', code: 'xian', province: '陕西' },
+  { name: '重庆', code: 'chongqing', province: '重庆' },
+  { name: '天津', code: 'tianjin', province: '天津' },
+  { name: '苏州', code: 'suzhou', province: '江苏' }
 ]
 
 // 省份和城市数据
@@ -737,17 +737,16 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
       const baseName = cityName.substring(1)
       if (baseName === '北京' || baseName === '上海' || baseName === '天津' || baseName === '重庆') {
         displayName = `${baseName}市`
-      } else if (baseName === '福州') {
-        displayName = `福州市`
       } else {
-        displayName = baseName
+        displayName = `${baseName}市`
       }
     } else if (provinceName) {
       // 如果有省份名称，组合显示
       if (provinceName === '北京' || provinceName === '上海' || provinceName === '天津' || provinceName === '重庆') {
         displayName = `${provinceName}市${cityName}`
       } else {
-        displayName = `${provinceName}${cityName}`
+        // 非直辖市格式：XX省XX市
+        displayName = `${provinceName}省${cityName}市`
       }
     }
 
@@ -763,8 +762,13 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
       const baseName = districtName.substring(1)
       displayName = `${baseName}市`
     } else {
-      // 组合省市区显示
-      displayName = `${provinceName}${cityName}${districtName}`
+      // 直辖市区县显示：XX市XX区
+      if (provinceName === '北京' || provinceName === '上海' || provinceName === '天津' || provinceName === '重庆') {
+        displayName = `${provinceName}市${districtName}`
+      } else {
+        // 非直辖市区县显示：XX省XX市XX区
+        displayName = `${provinceName}省${cityName}市${districtName}`
+      }
     }
 
     onChange(displayName)
@@ -772,11 +776,18 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
   }
 
   const handleHotCitySelect = (cityName: string) => {
+    // 查找热门城市的省份信息
+    const hotCity = HOT_CITIES.find(city => city.name === cityName)
     let displayName = cityName
 
-    // 直辖市显示为"XX市"格式，与省份选择保持一致
-    if (cityName === '北京' || cityName === '上海' || cityName === '天津' || cityName === '重庆') {
-      displayName = `${cityName}市`
+    if (hotCity && hotCity.province) {
+      // 使用与handleCitySelect相同的格式化逻辑
+      if (hotCity.province === '北京' || hotCity.province === '上海' || hotCity.province === '天津' || hotCity.province === '重庆') {
+        displayName = `${hotCity.province}市`
+      } else {
+        // 非直辖市格式：XX省XX市
+        displayName = `${hotCity.province}省${cityName}市`
+      }
     }
 
     onChange(displayName)
@@ -792,35 +803,39 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
         const baseName = city.name.substring(1)
         displayName = `${baseName}市`
       } else {
-        // 组合省市区显示
+        // 直辖市区县显示：XX市XX区
         if (city.province === '北京' || city.province === '上海' || city.province === '天津' || city.province === '重庆') {
           displayName = `${city.province}市${city.name}`
         } else {
-          displayName = `${city.province}${city.city}${city.name}`
+          // 非直辖市区县显示：XX省XX市XX区
+          displayName = `${city.province}省${city.city}市${city.name}`
         }
       }
     } else if (city.province) {
       // 城市搜索结果：使用与handleCitySelect相同的逻辑
       if (city.name.startsWith('全')) {
         const baseName = city.name.substring(1)
-        if (baseName === '北京' || baseName === '上海' || baseName === '天津' || baseName === '重庆') {
-          displayName = `${baseName}市`
-        } else if (baseName === '福州') {
-          displayName = `福州市`
-        } else {
-          displayName = baseName
-        }
+        displayName = `${baseName}市`
       } else {
         // 如果有省份名称，组合显示（与handleCitySelect保持一致）
         if (city.province === '北京' || city.province === '上海' || city.province === '天津' || city.province === '重庆') {
           displayName = `${city.province}市${city.name}`
         } else {
-          displayName = `${city.province}${city.name}`
+          // 非直辖市格式：XX省XX市
+          displayName = `${city.province}省${city.name}市`
         }
       }
     } else {
-      // 热门城市搜索结果：直辖市显示为"XX市"
-      if (city.name === '北京' || city.name === '上海' || city.name === '天津' || city.name === '重庆') {
+      // 热门城市搜索结果：查找省份信息并使用一致的格式化
+      const hotCity = HOT_CITIES.find(hotCityItem => hotCityItem.name === city.name)
+      if (hotCity && hotCity.province) {
+        if (hotCity.province === '北京' || hotCity.province === '上海' || hotCity.province === '天津' || hotCity.province === '重庆') {
+          displayName = `${hotCity.province}市`
+        } else {
+          displayName = `${hotCity.province}省${city.name}市`
+        }
+      } else if (city.name === '北京' || city.name === '上海' || city.name === '天津' || city.name === '重庆') {
+        // 兜底逻辑：直辖市显示为"XX市"
         displayName = `${city.name}市`
       }
     }

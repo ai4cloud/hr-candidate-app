@@ -13,8 +13,10 @@ interface BasicInfoData {
   birthDate: string
   idCard: string
   phone: string
+  wechat: string          // 微信号
   email: string
   city: string
+  nativePlace: string     // 籍贯
   address: string
   registeredAddress: string
   ethnicity: string
@@ -23,6 +25,7 @@ interface BasicInfoData {
   maritalStatus: string
   jobType: string
   availableDate: string
+  highlights: string      // 优势亮点
   avatarUrl: string
   idCardFrontUrl: string  // 身份证正面照URL
   idCardBackUrl: string   // 身份证反面照URL
@@ -143,6 +146,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
   const [dictData, setDictData] = useState<Record<string, Array<{ label: string; value: string }>>>({})
   const [loading, setLoading] = useState(true)
   const [isCitySelectorOpen, setIsCitySelectorOpen] = useState(false)
+  const [isNativePlaceSelectorOpen, setIsNativePlaceSelectorOpen] = useState(false)
 
   // 固定的性别选项
   const genderOptions = [
@@ -462,6 +466,20 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
           {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
         </div>
 
+        {/* 微信号 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            微信号
+          </label>
+          <input
+            type="text"
+            value={formData.wechat || ''}
+            onChange={(e) => handleChange('wechat', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="请输入微信号"
+          />
+        </div>
+
         {/* 民族 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -552,6 +570,28 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
           </div>
         </div>
 
+        {/* 籍贯 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            籍贯
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              value={formData.nativePlace || ''}
+              onClick={() => setIsNativePlaceSelectorOpen(true)}
+              readOnly
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bg-white"
+              placeholder="请选择籍贯"
+            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
 
 
         {/* 在职状态 */}
@@ -618,6 +658,23 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
             placeholder="请输入户籍地址"
           />
         </div>
+
+        {/* 优势亮点 */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            优势亮点
+          </label>
+          <textarea
+            value={formData.highlights || ''}
+            onChange={(e) => handleChange('highlights', e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="请描述您的优势亮点，如专业技能、项目经验、获奖情况等"
+          />
+          <p className="mt-1 text-sm text-gray-500">
+            建议详细描述您的核心技能、突出成就、项目经验等，帮助HR更好地了解您的能力
+          </p>
+        </div>
       </div>
 
       {/* 身份证照片上传区域 */}
@@ -680,12 +737,20 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
 
       {/* 保存按钮 */}
 
-      {/* 城市选择器 */}
+      {/* 现居城市选择器 */}
       <CitySelector
         value={formData.city || ''}
         onChange={(city) => handleChange('city', city)}
         onClose={() => setIsCitySelectorOpen(false)}
         isOpen={isCitySelectorOpen}
+      />
+
+      {/* 籍贯城市选择器 */}
+      <CitySelector
+        value={formData.nativePlace || ''}
+        onChange={(city) => handleChange('nativePlace', city)}
+        onClose={() => setIsNativePlaceSelectorOpen(false)}
+        isOpen={isNativePlaceSelectorOpen}
       />
     </div>
   )

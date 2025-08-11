@@ -63,8 +63,10 @@ model HrPerson {
   birthDate             DateTime? @map("birth_date") @db.Date
   idCard                String?   @map("id_card") @db.VarChar(50)
   phone                 String?   @db.VarChar(20)
+  wechat                String?   @db.VarChar(50)
   email                 String?   @db.VarChar(100)
   city                  String?   @db.VarChar(20)
+  nativePlace           String?   @map("native_place") @db.VarChar(50)
   address               String?   @db.Text
   registeredAddress     String?   @map("registered_address") @db.VarChar(500)
   ethnicity             String?   @db.VarChar(20)
@@ -81,6 +83,7 @@ model HrPerson {
   workStartDate         DateTime? @map("work_start_date") @db.Date
   availableDate         String?   @map("available_date") @db.VarChar(100)
   jobType               String?   @map("job_type") @db.VarChar(50)
+  highlights            String?   @db.Text
   avatarUrl             String?   @map("avatar_url") @db.VarChar(500)
   idCardFrontUrl        String?   @map("id_card_front_url") @db.VarChar(500)
   idCardBackUrl         String?   @map("id_card_back_url") @db.VarChar(500)
@@ -310,7 +313,7 @@ model HrPersonSocialInsurance {
   id          BigInt    @id @default(autoincrement())
   personId    BigInt    @map("person_id")
   startDate   DateTime  @map("start_date") @db.Date
-  endDate     DateTime  @map("end_date") @db.Date
+  endDate     DateTime? @map("end_date") @db.Date
   city        String?   @db.VarChar(50)
   companyName String?   @map("company_name") @db.VarChar(100)
   tenantId    BigInt?   @map("tenant_id")
