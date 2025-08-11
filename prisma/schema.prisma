@@ -375,3 +375,23 @@ model HrKeyUniversity {
 
   @@map("hr_key_university")
 }
+
+// 行业目录表
+model HrIndustryCatalog {
+  id           BigInt    @id @default(autoincrement())
+  code         String?   @db.VarChar(50)
+  name         String?   @db.VarChar(200)
+  parentId     BigInt?   @map("parent_id")
+  level        Int?
+  remark       String?   @db.VarChar(500)
+  enabled      Boolean?
+  displayOrder Int?      @default(0) @map("display_order")
+  tenantId     BigInt?   @map("tenant_id")
+  creator      String?   @db.VarChar(64)
+  createTime   DateTime  @default(now()) @map("create_time")
+  updater      String?   @db.VarChar(64)
+  updateTime   DateTime  @default(now()) @updatedAt @map("update_time")
+  deleted      Boolean   @default(false) @db.Bit(1)
+
+  @@map("hr_industry_catalog")
+}

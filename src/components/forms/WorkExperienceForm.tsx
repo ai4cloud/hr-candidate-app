@@ -5,6 +5,7 @@ import { Plus, Trash2, Briefcase } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import DatePickerWithToday from '@/components/ui/DatePickerWithToday'
 import CitySelector from '@/components/ui/CitySelector'
+import IndustrySelector from '@/components/ui/IndustrySelector'
 
 // 工作经历数据类型 - 基于数据库表结构
 interface WorkExperienceData {
@@ -40,6 +41,13 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
     onConfirm: () => {}
   })
   const [citySelectorState, setCitySelectorState] = useState<{
+    isOpen: boolean
+    workExperienceIndex: number | null
+  }>({
+    isOpen: false,
+    workExperienceIndex: null
+  })
+  const [industrySelectorState, setIndustrySelectorState] = useState<{
     isOpen: boolean
     workExperienceIndex: number | null
   }>({
@@ -319,13 +327,21 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       行业
                     </label>
-                    <input
-                      type="text"
-                      value={workExperience.industry || ''}
-                      onChange={(e) => updateWorkExperience(index, 'industry', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="请输入行业"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={workExperience.industry || ''}
+                        onClick={() => setIndustrySelectorState({ isOpen: true, workExperienceIndex: index })}
+                        readOnly
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bg-white"
+                        placeholder="请选择行业"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
 
                   {/* 工作地点 */}
@@ -435,6 +451,19 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
         }}
         onClose={() => setCitySelectorState({ isOpen: false, workExperienceIndex: null })}
         isOpen={citySelectorState.isOpen}
+      />
+
+      {/* 行业选择器 */}
+      <IndustrySelector
+        value={industrySelectorState.workExperienceIndex !== null ?
+          (workExperiences[industrySelectorState.workExperienceIndex]?.industry || '') : ''}
+        onChange={(industry) => {
+          if (industrySelectorState.workExperienceIndex !== null) {
+            updateWorkExperience(industrySelectorState.workExperienceIndex, 'industry', industry)
+          }
+        }}
+        onClose={() => setIndustrySelectorState({ isOpen: false, workExperienceIndex: null })}
+        isOpen={industrySelectorState.isOpen}
       />
     </div>
   )

@@ -35,11 +35,11 @@ interface PersonData {
 }
 
 interface JobExpectationData {
-  position: string
-  industry: string
-  salary: string
-  workLocation: string
-  workType: string
+  expectedPosition: string
+  expectedIndustry: string
+  expectedSalary: string
+  expectedCity: string
+  workType?: string
 }
 
 interface EducationData {
@@ -154,8 +154,11 @@ function FilePreview({ fileUrl, fileName }: { fileUrl: string; fileName?: string
 }
 
 export default function PreviewForm({ data }: PreviewFormProps) {
-  const { jobExpectations, educations, workExperiences, projectExperiences } = data
   const [person, setPerson] = useState<PersonData>(data.person)
+  const [jobExpectations, setJobExpectations] = useState<JobExpectationData[]>(data.jobExpectations || [])
+  const [educations, setEducations] = useState(data.educations || [])
+  const [workExperiences, setWorkExperiences] = useState(data.workExperiences || [])
+  const [projectExperiences, setProjectExperiences] = useState(data.projectExperiences || [])
   const [dictData, setDictData] = useState<Record<string, Array<{ label: string; value: string }>>>({})
   const [loading, setLoading] = useState(true)
 
@@ -188,8 +191,25 @@ export default function PreviewForm({ data }: PreviewFormProps) {
         // 处理person数据
         if (personResponse.ok) {
           const personResult = await personResponse.json()
-          if (personResult.success && personResult.data.person) {
-            setPerson(personResult.data.person)
+          if (personResult.success && personResult.data) {
+            // 更新person数据
+            if (personResult.data.person) {
+              setPerson(personResult.data.person)
+            }
+            // 更新求职期望数据
+            if (personResult.data.jobExpectations) {
+              setJobExpectations(personResult.data.jobExpectations)
+            }
+            // 更新其他数据
+            if (personResult.data.educations) {
+              setEducations(personResult.data.educations)
+            }
+            if (personResult.data.workExperiences) {
+              setWorkExperiences(personResult.data.workExperiences)
+            }
+            if (personResult.data.projectExperiences) {
+              setProjectExperiences(personResult.data.projectExperiences)
+            }
           }
         } else {
           console.error('获取person数据失败')
@@ -409,19 +429,19 @@ export default function PreviewForm({ data }: PreviewFormProps) {
             <div key={index} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-500">期望职位</label>
-                <p className="text-gray-900">{job.position || '未填写'}</p>
+                <p className="text-gray-900">{job.expectedPosition || '未填写'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">期望行业</label>
-                <p className="text-gray-900">{job.industry || '未填写'}</p>
+                <p className="text-gray-900">{job.expectedIndustry || '未填写'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">期望薪资</label>
-                <p className="text-gray-900">{job.salary || '未填写'}</p>
+                <p className="text-gray-900">{job.expectedSalary || '未填写'}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">工作地点</label>
-                <p className="text-gray-900">{job.workLocation || '未填写'}</p>
+                <label className="text-sm font-medium text-gray-500">期望城市</label>
+                <p className="text-gray-900">{job.expectedCity || '未填写'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">工作类型</label>
@@ -429,6 +449,16 @@ export default function PreviewForm({ data }: PreviewFormProps) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* 求职期望为空时的提示 */}
+      {(!jobExpectations || jobExpectations.length === 0) && (
+        <div className="bg-white rounded-lg border p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            💼 求职期望
+          </h3>
+          <p className="text-gray-500">暂无求职期望信息</p>
         </div>
       )}
 

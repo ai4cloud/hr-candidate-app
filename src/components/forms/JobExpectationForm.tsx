@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Trash2, Target, MapPin, DollarSign, Briefcase } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import CitySelector from '@/components/ui/CitySelector'
+import IndustrySelector from '@/components/ui/IndustrySelector'
 
 // 求职期望数据类型 - 基于数据库表结构
 interface JobExpectationData {
@@ -24,6 +25,13 @@ export default function JobExpectationForm({ data, onChange }: JobExpectationFor
   const [errors, setErrors] = useState<Record<string, Record<string, string>>>({})
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
   const [citySelectorState, setCitySelectorState] = useState<{
+    isOpen: boolean
+    currentIndex: number | null
+  }>({
+    isOpen: false,
+    currentIndex: null
+  })
+  const [industrySelectorState, setIndustrySelectorState] = useState<{
     isOpen: boolean
     currentIndex: number | null
   }>({
@@ -233,14 +241,21 @@ export default function JobExpectationForm({ data, onChange }: JobExpectationFor
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         期望行业
                       </label>
-                      <input
-                        type="text"
-                        value={jobExpectation.expectedIndustry}
-                        onChange={(e) => updateJobExpectation(index, 'expectedIndustry', e.target.value)}
-                        onBlur={(e) => handleFieldBlur(index, 'expectedIndustry', e.target.value)}
-                        placeholder="如：互联网、金融、教育等"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={jobExpectation.expectedIndustry}
+                          onClick={() => setIndustrySelectorState({ isOpen: true, currentIndex: index })}
+                          readOnly
+                          placeholder="请选择期望行业"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bg-white"
+                        />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
                       {errors[index]?.expectedIndustry && (
                         <p className="mt-1 text-sm text-red-600">{errors[index].expectedIndustry}</p>
                       )}
@@ -321,6 +336,18 @@ export default function JobExpectationForm({ data, onChange }: JobExpectationFor
         }}
         onClose={() => setCitySelectorState({ isOpen: false, currentIndex: null })}
         isOpen={citySelectorState.isOpen}
+      />
+
+      {/* 行业选择器 */}
+      <IndustrySelector
+        value={industrySelectorState.currentIndex !== null ? jobExpectations[industrySelectorState.currentIndex]?.expectedIndustry || '' : ''}
+        onChange={(industry) => {
+          if (industrySelectorState.currentIndex !== null) {
+            updateJobExpectation(industrySelectorState.currentIndex, 'expectedIndustry', industry)
+          }
+        }}
+        onClose={() => setIndustrySelectorState({ isOpen: false, currentIndex: null })}
+        isOpen={industrySelectorState.isOpen}
       />
     </div>
   )
