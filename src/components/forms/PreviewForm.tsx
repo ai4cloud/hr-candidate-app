@@ -81,6 +81,15 @@ interface ProjectExperienceData {
   technologies: string
 }
 
+interface SkillData {
+  id: string
+  skillId?: number | null
+  skillName: string
+  proficiencyLevel: string
+  yearsOfExperience: number | null
+  sourceType: string
+}
+
 interface PreviewFormProps {
   data: {
     person: PersonData
@@ -88,7 +97,7 @@ interface PreviewFormProps {
     educations: EducationData[]
     workExperiences: WorkExperienceData[]
     projectExperiences: ProjectExperienceData[]
-    skills: any[]
+    skills: SkillData[]
     certificates: any[]
     trainings: any[]
     languages: any[]
@@ -159,6 +168,7 @@ export default function PreviewForm({ data }: PreviewFormProps) {
   const [educations, setEducations] = useState(data.educations || [])
   const [workExperiences, setWorkExperiences] = useState(data.workExperiences || [])
   const [projectExperiences, setProjectExperiences] = useState(data.projectExperiences || [])
+  const [skills, setSkills] = useState<SkillData[]>(data.skills || [])
   const [dictData, setDictData] = useState<Record<string, Array<{ label: string; value: string }>>>({})
   const [loading, setLoading] = useState(true)
 
@@ -183,7 +193,7 @@ export default function PreviewForm({ data }: PreviewFormProps) {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              types: ['ethnicity', 'nationality', 'political_status', 'marital_status', 'job_type', 'employment_status', 'education_level', 'degree']
+              types: ['ethnicity', 'nationality', 'political_status', 'marital_status', 'job_type', 'employment_status', 'education_level', 'degree', 'proficiency_level']
             }),
           })
         ])
@@ -209,6 +219,9 @@ export default function PreviewForm({ data }: PreviewFormProps) {
             }
             if (personResult.data.projectExperiences) {
               setProjectExperiences(personResult.data.projectExperiences)
+            }
+            if (personResult.data.skills) {
+              setSkills(personResult.data.skills)
             }
           }
         } else {
@@ -691,15 +704,42 @@ export default function PreviewForm({ data }: PreviewFormProps) {
         </div>
       )}
 
+      {/* 技能特长 */}
+      {skills && skills.length > 0 && (
+        <div className="bg-white rounded-lg border p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+            ⚡ 技能特长
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {skills.map((skill, index) => (
+              <div key={skill.id || index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                {/* 技能名称和熟练程度 */}
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-gray-900 text-base">
+                    {skill.skillName || '未填写'}
+                  </h4>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {getDictLabel('proficiency_level', skill.proficiencyLevel)}
+                  </span>
+                </div>
+
+                {/* 使用年限 */}
+                <div className="text-sm text-gray-600">
+                  {skill.yearsOfExperience !== null && skill.yearsOfExperience !== undefined
+                    ? `${skill.yearsOfExperience}年经验`
+                    : '经验待填写'
+                  }
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 其他模块占位 */}
       <div className="bg-white rounded-lg border p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">其他信息</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl mb-2">⚡</div>
-            <div className="text-sm font-medium text-gray-700">技能特长</div>
-            <div className="text-xs text-gray-500 mt-1">待完善</div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center p-4 bg-gray-50 rounded-lg">
             <div className="text-2xl mb-2">🏆</div>
             <div className="text-sm font-medium text-gray-700">资格证书</div>
