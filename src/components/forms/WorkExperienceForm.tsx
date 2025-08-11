@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Trash2, Briefcase } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import DatePickerWithToday from '@/components/ui/DatePickerWithToday'
+import CitySelector from '@/components/ui/CitySelector'
 
 // 工作经历数据类型 - 基于数据库表结构
 interface WorkExperienceData {
@@ -37,6 +38,13 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
     title: '',
     message: '',
     onConfirm: () => {}
+  })
+  const [citySelectorState, setCitySelectorState] = useState<{
+    isOpen: boolean
+    workExperienceIndex: number | null
+  }>({
+    isOpen: false,
+    workExperienceIndex: null
   })
 
   // 同步外部数据变化
@@ -325,13 +333,21 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       工作地点
                     </label>
-                    <input
-                      type="text"
-                      value={workExperience.location || ''}
-                      onChange={(e) => updateWorkExperience(index, 'location', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="请输入工作地点"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={workExperience.location || ''}
+                        onClick={() => setCitySelectorState({ isOpen: true, workExperienceIndex: index })}
+                        readOnly
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bg-white"
+                        placeholder="请选择工作地点"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
 
                   {/* 入职时间 */}
@@ -406,6 +422,19 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
         type="danger"
         onConfirm={confirmDialog.onConfirm}
         onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+      />
+
+      {/* 城市选择器 */}
+      <CitySelector
+        value={citySelectorState.workExperienceIndex !== null ?
+          (workExperiences[citySelectorState.workExperienceIndex]?.location || '') : ''}
+        onChange={(city) => {
+          if (citySelectorState.workExperienceIndex !== null) {
+            updateWorkExperience(citySelectorState.workExperienceIndex, 'location', city)
+          }
+        }}
+        onClose={() => setCitySelectorState({ isOpen: false, workExperienceIndex: null })}
+        isOpen={citySelectorState.isOpen}
       />
     </div>
   )
