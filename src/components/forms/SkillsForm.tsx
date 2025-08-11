@@ -55,6 +55,8 @@ export default function SkillsForm({ data, onChange, onValidationChange }: Skill
   const [showSkillSelector, setShowSkillSelector] = useState(false)
   const [currentEditingIndex, setCurrentEditingIndex] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [skillSelectorMode, setSkillSelectorMode] = useState<'catalog' | 'custom'>('catalog')
+  const [customSkillName, setCustomSkillName] = useState('')
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean
     title: string
@@ -221,23 +223,69 @@ export default function SkillsForm({ data, onChange, onValidationChange }: Skill
 
     setShowSkillSelector(false)
     setCurrentEditingIndex(null)
+    setSkillSelectorMode('catalog')
+    setCustomSkillName('')
+  }
+
+  // 选择自定义技能
+  const selectCustomSkill = (skillName: string, index: number) => {
+    console.log('selectCustomSkill called:', { skillName, index })
+
+    // 检查索引是否有效
+    if (index === null || index === undefined || index < 0 || index >= skills.length) {
+      console.error('Invalid index:', index, 'skills.length:', skills.length)
+      alert('选择技能时出现错误，请重试')
+      return
+    }
+
+    // 检查技能名称是否为空
+    if (!skillName.trim()) {
+      alert('请输入技能名称')
+      return
+    }
+
+    // 检查是否已存在相同技能
+    const exists = skills.some((s, i) => i !== index && s.skillName === skillName.trim())
+    if (exists) {
+      alert('该技能已存在')
+      return
+    }
+
+    // 一次性更新所有字段（自定义技能skillId为null）
+    const updatedSkills = [...skills]
+    updatedSkills[index] = {
+      ...updatedSkills[index],
+      skillId: null,
+      skillName: skillName.trim(),
+      sourceType: 'custom'
+    }
+
+    console.log('Updated custom skill:', updatedSkills[index])
+    setSkills(updatedSkills)
+    onChange(updatedSkills)
+
+    setShowSkillSelector(false)
+    setCurrentEditingIndex(null)
+    setSkillSelectorMode('catalog')
+    setCustomSkillName('')
   }
 
   // 验证单个字段
-  const validateField = (index: number, field: keyof SkillData, value: string): string => {
+  const validateField = (index: number, field: keyof SkillData, value: string | number | null): string => {
     switch (field) {
       case 'skillName':
-        if (!value.trim()) return '技能名称不能为空'
-        if (value.length > 100) return '技能名称不能超过100个字符'
+        if (!value || !String(value).trim()) return '技能名称不能为空'
+        if (String(value).length > 100) return '技能名称不能超过100个字符'
         // 检查是否与其他技能重复
-        const exists = skills.some((s, i) => i !== index && s.skillName === value)
+        const exists = skills.some((s, i) => i !== index && s.skillName === String(value))
         if (exists) return '该技能已存在'
         break
       case 'proficiencyLevel':
         if (!value) return '请选择熟练程度'
         break
       case 'yearsOfExperience':
-        const years = parseInt(value)
+        if (value === null || value === undefined || value === '') return '使用年限不能为空'
+        const years = Number(value)
         if (isNaN(years) || years < 0) return '使用年限必须是非负整数'
         if (years > 50) return '使用年限不能超过50年'
         break
@@ -336,31 +384,29 @@ export default function SkillsForm({ data, onChange, onValidationChange }: Skill
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         技能名称 <span className="text-red-500">*</span>
                       </label>
-                      <div className="flex gap-2">
+                      <div className="relative">
                         <input
                           type="text"
                           value={skill.skillName || ''}
+                          onClick={() => {
+                            console.log('Skill name input clicked for index:', index)
+                            setCurrentEditingIndex(index)
+                            setShowSkillSelector(true)
+                          }}
                           onChange={(e) => {
                             updateSkill(index, 'skillName', e.target.value)
                             updateSkill(index, 'sourceType', 'custom')
                             updateSkill(index, 'skillId', null)
                           }}
                           onBlur={(e) => handleFieldBlur(index, 'skillName', e.target.value)}
-                          placeholder="请输入技能名称"
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="请输入技能名称或点击选择"
+                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
                         />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            console.log('Search button clicked for index:', index)
-                            setCurrentEditingIndex(index)
-                            setShowSkillSelector(true)
-                          }}
-                          className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-                          title="从技能库选择"
-                        >
-                          <Search className="w-4 h-4" />
-                        </button>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
                       </div>
                       {errors[index]?.skillName && (
                         <p className="mt-1 text-sm text-red-600">{errors[index].skillName}</p>
@@ -395,7 +441,7 @@ export default function SkillsForm({ data, onChange, onValidationChange }: Skill
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        使用年限（年）
+                        使用年限（年） <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="number"
@@ -422,8 +468,9 @@ export default function SkillsForm({ data, onChange, onValidationChange }: Skill
       {/* 技能选择弹窗 */}
       {showSkillSelector && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-lg w-full max-w-4xl h-[600px] flex flex-col">
+            {/* 固定头部 */}
+            <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-lg font-medium text-gray-900">
                 选择技能
                 <span className="text-sm text-gray-500 ml-2">
@@ -435,6 +482,8 @@ export default function SkillsForm({ data, onChange, onValidationChange }: Skill
                 onClick={() => {
                   setShowSkillSelector(false)
                   setCurrentEditingIndex(null)
+                  setSkillSelectorMode('catalog')
+                  setCustomSkillName('')
                 }}
                 className="text-gray-400 hover:text-gray-600"
               >
@@ -444,53 +493,133 @@ export default function SkillsForm({ data, onChange, onValidationChange }: Skill
               </button>
             </div>
 
-            {/* 搜索框 */}
-            <div className="mb-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="搜索技能..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
+            {/* 选择模式切换 */}
+            <div className="flex border-b">
+              <button
+                onClick={() => setSkillSelectorMode('catalog')}
+                className={`px-4 py-2 font-medium ${
+                  skillSelectorMode === 'catalog'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                从技能库选择
+              </button>
+              <button
+                onClick={() => setSkillSelectorMode('custom')}
+                className={`px-4 py-2 font-medium ${
+                  skillSelectorMode === 'custom'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                输入自定义技能
+              </button>
             </div>
 
-            {/* 技能分类列表 */}
-            <div className="space-y-4">
-              {filteredSkillCatalogs.map((category) => (
-                <div key={category.key} className="border border-gray-200 rounded-lg p-4">
-                  <h5 className="font-medium text-gray-900 mb-3">{category.label}</h5>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {category.skills.map((skill) => (
-                      <button
-                        key={skill.id}
-                        type="button"
-                        onClick={() => {
-                          if (currentEditingIndex !== null) {
-                            selectSkillFromCatalog(skill, currentEditingIndex)
-                          } else {
-                            console.error('currentEditingIndex is null')
-                            alert('请先选择要编辑的技能')
-                          }
-                        }}
-                        className="p-2 text-sm border border-gray-200 rounded-md text-left hover:bg-blue-50 hover:border-blue-300 transition-colors"
-                      >
-                        {skill.name}
-                      </button>
-                    ))}
-                  </div>
+            {/* 搜索框 - 仅在技能库模式下显示 */}
+            {skillSelectorMode === 'catalog' && (
+              <div className="p-4 border-b">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="搜索技能..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
-              ))}
-            </div>
-
-            {filteredSkillCatalogs.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <p>未找到匹配的技能</p>
               </div>
             )}
+
+            {/* 自定义技能输入模式 */}
+            {skillSelectorMode === 'custom' && (
+              <div className="p-4 border-b">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      技能名称 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={customSkillName}
+                      onChange={(e) => setCustomSkillName(e.target.value)}
+                      placeholder="请输入自定义技能名称"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      maxLength={100}
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSkillSelectorMode('catalog')
+                        setCustomSkillName('')
+                      }}
+                      className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (customSkillName.trim() && currentEditingIndex !== null) {
+                          selectCustomSkill(customSkillName, currentEditingIndex)
+                        } else {
+                          alert('请输入技能名称')
+                        }
+                      }}
+                      disabled={!customSkillName.trim()}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    >
+                      确认添加
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 可滚动内容区域 */}
+            <div className="flex-1 overflow-y-auto">
+              {/* 技能分类列表 - 仅在技能库模式下显示 */}
+              {skillSelectorMode === 'catalog' && (
+                <div className="p-4">
+                  <div className="space-y-4">
+                    {filteredSkillCatalogs.map((category) => (
+                      <div key={category.key} className="border border-gray-200 rounded-lg p-4">
+                        <h5 className="font-medium text-gray-900 mb-3">{category.label}</h5>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                          {category.skills.map((skill) => (
+                            <button
+                              key={skill.id}
+                              type="button"
+                              onClick={() => {
+                                if (currentEditingIndex !== null) {
+                                  selectSkillFromCatalog(skill, currentEditingIndex)
+                                } else {
+                                  console.error('currentEditingIndex is null')
+                                  alert('请先选择要编辑的技能')
+                                }
+                              }}
+                              className="p-2 text-sm border border-gray-200 rounded-md text-left hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                            >
+                              {skill.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {filteredSkillCatalogs.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>未找到匹配的技能</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

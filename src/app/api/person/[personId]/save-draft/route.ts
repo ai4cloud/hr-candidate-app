@@ -440,17 +440,33 @@ export async function POST(
         // 插入新的技能
         for (const skill of skills) {
           if (skill.skillName) {
+            const skillData: Record<string, unknown> = {
+              personId: BigInt(personId),
+              skillName: skill.skillName,
+              proficiencyLevel: skill.proficiencyLevel || null,
+              sourceType: skill.sourceType || 'manual',
+              tenantId: BigInt(getDefaultTenantId()),
+              createTime: new Date(),
+              updateTime: new Date(),
+              deleted: false
+            }
+
+            // 处理技能ID（技能库技能有ID，自定义技能为null）
+            if (skill.skillId !== undefined && skill.skillId !== null) {
+              skillData.skillId = BigInt(skill.skillId)
+            } else {
+              skillData.skillId = null
+            }
+
+            // 处理使用年限
+            if (skill.yearsOfExperience !== undefined && skill.yearsOfExperience !== null) {
+              skillData.yearsOfExperience = Number(skill.yearsOfExperience)
+            } else {
+              skillData.yearsOfExperience = null
+            }
+
             await tx.hrPersonSkill.create({
-              data: {
-                personId: BigInt(personId),
-                skillName: skill.skillName,
-                proficiencyLevel: skill.proficiencyLevel || null,
-                sourceType: skill.sourceType || 'manual',
-                tenantId: BigInt(getDefaultTenantId()),
-                createTime: new Date(),
-                updateTime: new Date(),
-                deleted: false
-              }
+              data: skillData
             })
           }
         }
