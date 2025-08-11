@@ -238,6 +238,7 @@ model HrPersonSkill {
 
   // 关联主表
   person HrPerson @relation(fields: [personId], references: [id])
+  skill  HrSkillCatalog? @relation(fields: [skillId], references: [id])
 
   @@unique([personId, skillName], map: "uk_person_skill")
   @@map("hr_person_skill")
@@ -343,6 +344,9 @@ model HrSkillCatalog {
   updateTime  DateTime  @default(now()) @updatedAt @map("update_time")
   deleted     Boolean   @default(false) @db.Bit(1)
 
+  // 关联技能记录
+  skills HrPersonSkill[]
+
   @@map("hr_skill_catalog")
 }
 
@@ -398,3 +402,7 @@ model HrIndustryCatalog {
 
   @@map("hr_industry_catalog")
 }
+
+
+
+

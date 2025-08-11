@@ -7,6 +7,7 @@ import JobExpectationForm from '@/components/forms/JobExpectationForm'
 import EducationForm from '@/components/forms/EducationForm'
 import WorkExperienceForm from '@/components/forms/WorkExperienceForm'
 import ProjectExperienceForm from '@/components/forms/ProjectExperienceForm'
+import SkillsForm from '@/components/forms/SkillsForm'
 import PreviewForm from '@/components/forms/PreviewForm'
 
 // 步骤定义
@@ -392,6 +393,13 @@ export default function FormPage() {
     debouncedSave()
   }
 
+  // 处理技能特长变化
+  const handleSkillsChange = async (data: any) => {
+    setSkills(data)
+    // 使用防抖延迟保存，避免频繁触发
+    debouncedSave()
+  }
+
   // 处理滑动切换
   const handleSwipe = (direction: 'up' | 'down') => {
     if (direction === 'down' && currentStep > 0) {
@@ -551,6 +559,40 @@ export default function FormPage() {
             添加项目经历
           </button>
         )
+      case 5: // 技能特长
+        return (
+          <button
+            onClick={() => {
+              // 触发技能特长添加逻辑
+              const newSkill = {
+                id: `temp_${Date.now()}`,
+                skillId: null,
+                skillName: '',
+                proficiencyLevel: '',
+                yearsOfExperience: null,
+                sourceType: 'catalog'
+              }
+              setSkills(prev => {
+                const newList = [...prev, newSkill]
+                // 自动展开新添加的记录
+                setTimeout(() => {
+                  const newIndex = newList.length - 1
+                  const expandEvent = new CustomEvent('expandSkill', {
+                    detail: { index: newIndex }
+                  })
+                  window.dispatchEvent(expandEvent)
+                }, 100)
+                return newList
+              })
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            添加技能
+          </button>
+        )
       default:
         return null
     }
@@ -595,6 +637,13 @@ export default function FormPage() {
             onChange={handleProjectExperienceChange}
           />
         )
+      case 5: // 技能特长
+        return (
+          <SkillsForm
+            data={skills}
+            onChange={handleSkillsChange}
+          />
+        )
       case 9: // 预览提交
         return (
           <PreviewForm
@@ -604,7 +653,7 @@ export default function FormPage() {
               educations: educations,
               workExperiences: workExperiences,
               projectExperiences: projectExperiences,
-              skills: [],
+              skills: skills,
               certificates: [],
               trainings: [],
               languages: []
