@@ -457,7 +457,7 @@ export default function PreviewForm({ data }: PreviewFormProps) {
             💼 求职期望
           </h3>
           {jobExpectations.map((job, index) => (
-            <div key={index} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div key={index} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-500">期望职位</label>
                 <p className="text-gray-900">{job.expectedPosition || '未填写'}</p>
@@ -473,10 +473,6 @@ export default function PreviewForm({ data }: PreviewFormProps) {
               <div>
                 <label className="text-sm font-medium text-gray-500">期望城市</label>
                 <p className="text-gray-900">{job.expectedCity || '未填写'}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">工作类型</label>
-                <p className="text-gray-900">{job.workType || '未填写'}</p>
               </div>
             </div>
           ))}
