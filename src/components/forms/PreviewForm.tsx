@@ -11,8 +11,10 @@ interface PersonData {
   birthDate: string
   idCard: string
   phone: string
+  wechat: string
   email: string
   city: string
+  nativePlace: string
   address: string
   registeredAddress: string
   ethnicity: string
@@ -32,6 +34,7 @@ interface PersonData {
   school: string
   companyName: string
   position: string
+  highlights: string
 }
 
 interface JobExpectationData {
@@ -73,12 +76,14 @@ interface WorkExperienceData {
 
 interface ProjectExperienceData {
   id: string
-  name: string
-  role: string
+  projectName: string
+  projectRole: string
   startDate: string
   endDate: string
-  description: string
+  projectDesc: string
   technologies: string
+  projectResponsibility: string
+  projectAchievement: string
 }
 
 interface SkillData {
