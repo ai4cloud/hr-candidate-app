@@ -144,7 +144,7 @@ export async function POST(
       }
     }
 
-    // 开始事务
+    // 开始事务，设置超时时间为30秒
     const result = await prisma.$transaction(async (tx) => {
       // 1. 更新基本信息
       if (basicInfo) {
@@ -555,6 +555,9 @@ export async function POST(
       }
 
       return { success: true }
+    }, {
+      timeout: 30000, // 30秒超时
+      maxWait: 5000   // 最多等待5秒获取事务锁
     })
 
     return NextResponse.json({
