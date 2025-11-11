@@ -198,12 +198,9 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
 
   // 当外部数据更新时，同步内部状态
   useEffect(() => {
-    // 处理从API返回的数据，将空字符串的endDate转换为null
-    const processedData = (data || []).map(education => ({
-      ...education,
-      endDate: education.endDate === '' ? null : education.endDate
-    }))
-    setEducations(processedData)
+    // 直接使用API返回的数据，不进行转换
+    // null 表示"至今"，空字符串表示"未选择"
+    setEducations(data || [])
   }, [data])
 
   // 监听自动展开事件

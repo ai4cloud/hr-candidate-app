@@ -5,9 +5,19 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "prisma generate && next build",
+    "build:local": "NODE_ENV=development prisma generate && next build",
+    "build:dev": "NODE_ENV=development prisma generate && next build",
+    "build:test": "NODE_ENV=test prisma generate && next build",
+    "build:production": "NODE_ENV=production prisma generate && next build",
     "start": "next start",
+    "start:local": "NODE_ENV=development next start",
+    "start:dev": "NODE_ENV=development next start",
+    "start:test": "NODE_ENV=test next start",
+    "start:production": "NODE_ENV=production next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",

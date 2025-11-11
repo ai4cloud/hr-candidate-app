@@ -31,7 +31,7 @@ export default function ProjectExperienceForm({ data, onChange }: ProjectExperie
     projectName: project.projectName || '',
     companyName: project.companyName || '',
     startDate: project.startDate || '',
-    endDate: project.endDate === undefined ? '' : (project.endDate === '' ? null : project.endDate),  // 将空字符串转换为null
+    endDate: project.endDate === undefined ? '' : project.endDate,  // null 表示"至今"，空字符串表示"未选择"
     technologies: project.technologies || '',
     projectDesc: project.projectDesc || '',
     projectRole: project.projectRole || '',

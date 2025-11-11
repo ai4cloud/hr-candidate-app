@@ -57,12 +57,9 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
 
   // 同步外部数据变化
   useEffect(() => {
-    // 处理从API返回的数据，将空字符串的endDate转换为null
-    const processedData = (data || []).map(work => ({
-      ...work,
-      endDate: work.endDate === '' ? null : work.endDate
-    }))
-    setWorkExperiences(processedData)
+    // 直接使用API返回的数据，不进行转换
+    // null 表示"至今"，空字符串表示"未选择"
+    setWorkExperiences(data || [])
   }, [data])
 
   // 监听自动展开事件
