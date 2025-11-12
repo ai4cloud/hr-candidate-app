@@ -177,6 +177,9 @@ export async function POST(
         if (processedBasicInfo.idCardFrontUrl) updateData.idCardFrontUrl = processedBasicInfo.idCardFrontUrl
         if (processedBasicInfo.idCardBackUrl) updateData.idCardBackUrl = processedBasicInfo.idCardBackUrl
 
+        // 社保截图字段
+        if (processedBasicInfo.socialInsuranceImageUrl) updateData.socialInsuranceImageUrl = processedBasicInfo.socialInsuranceImageUrl
+
         // 自动计算的字段
         if (processedBasicInfo.birthDate) updateData.birthDate = new Date(processedBasicInfo.birthDate)
         if (processedBasicInfo.age !== undefined && processedBasicInfo.age !== null) updateData.age = processedBasicInfo.age
