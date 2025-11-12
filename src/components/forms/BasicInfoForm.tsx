@@ -29,6 +29,7 @@ interface BasicInfoData {
     avatarUrl: string
     idCardFrontUrl: string  // 身份证正面照URL
     idCardBackUrl: string   // 身份证反面照URL
+    socialInsuranceImageUrl: string  // 社保截图URL
 
     // 工作相关字段
     employmentStatus: string
@@ -728,6 +729,68 @@ export default function BasicInfoForm({data, onChange, onValidationChange}: Basi
                             />
                         )}
                     </div>
+                </div>
+            </div>
+
+            {/* 社保截图上传区域 */}
+            <div className="space-y-4">
+                <h4 className="flex items-center text-lg font-medium text-gray-900">
+                    <FileText className="h-5 w-5 mr-2"/>
+                    社保截图
+                </h4>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        社保截图
+                    </label>
+                    {!formData.socialInsuranceImageUrl ? (
+                        <FileUpload
+                            onFileUploaded={(fileUrl, fileName) => handleChange('socialInsuranceImageUrl', fileUrl)}
+                            directory="social-insurance"
+                            accept="image/*"
+                            maxSize={10}
+                            placeholder="上传社保截图"
+                            currentFile={formData.socialInsuranceImageUrl}
+                        />
+                    ) : (
+                        <FilePreview
+                            fileUrl={formData.socialInsuranceImageUrl}
+                            onDelete={() => handleChange('socialInsuranceImageUrl', '')}
+                            onReupload={() => {
+                                const input = document.createElement('input')
+                                input.type = 'file'
+                                input.accept = 'image/*'
+                                input.onchange = async (e) => {
+                                    const file = (e.target as HTMLInputElement).files?.[0]
+                                    if (file) {
+                                        try {
+                                            const formData = new FormData()
+                                            formData.append('file', file)
+                                            formData.append('directory', 'social-insurance')
+
+                                            const response = await fetch('/api/upload', {
+                                                method: 'POST',
+                                                body: formData
+                                            })
+
+                                            const result = await response.json()
+                                            if (result.success && result.data?.fileUrl) {
+                                                handleChange('socialInsuranceImageUrl', result.data.fileUrl)
+                                            } else {
+                                                console.error('文件上传失败:', result.error || result.message || '未知错误')
+                                            }
+                                        } catch (error) {
+                                            console.error('文件上传失败:', error)
+                                        }
+                                    }
+                                }
+                                input.click()
+                            }}
+                        />
+                    )}
+                    <p className="mt-1 text-sm text-gray-500">
+                        请上传您的社保缴纳记录截图
+                    </p>
                 </div>
             </div>
 

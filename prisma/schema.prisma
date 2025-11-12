@@ -88,6 +88,7 @@ model HrPerson {
   idCardFrontUrl        String?   @map("id_card_front_url") @db.VarChar(500)
   idCardBackUrl         String?   @map("id_card_back_url") @db.VarChar(500)
   socialInsuranceUrl    String?   @map("social_insurance_url") @db.VarChar(500)
+  socialInsuranceImageUrl String? @map("social_insurance_image_url") @db.VarChar(500)
   resumeUrl             String?   @map("resume_url") @db.VarChar(500)
   resumeParseStatus     Int?      @map("resume_parse_status")
   resumeParseErrorMsg   String?   @map("resume_parse_error_msg") @db.VarChar(500)
