@@ -591,6 +591,20 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                             onReupload={() => handleFileUpload(index, 'educationCertFile', 'education-certs')}
                           />
                         )}
+
+                        {/* 学历证编号 */}
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            学历证编号
+                          </label>
+                          <input
+                            type="text"
+                            value={education.educationCertNo || ''}
+                            onChange={(e) => updateEducation(index, 'educationCertNo', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入学历证编号"
+                          />
+                        </div>
                       </div>
 
                       {/* 学历证书电子注册备案表 */}
@@ -614,6 +628,20 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                             onReupload={() => handleFileUpload(index, 'educationVerifyFile', 'education-verify')}
                           />
                         )}
+
+                        {/* 学历在线验证码 */}
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            学历在线验证码
+                          </label>
+                          <input
+                            type="text"
+                            value={education.educationVerifyCode || ''}
+                            onChange={(e) => updateEducation(index, 'educationVerifyCode', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入学历在线验证码"
+                          />
+                        </div>
                       </div>
 
                       {/* 学位证文件 */}
@@ -637,6 +665,20 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                             onReupload={() => handleFileUpload(index, 'degreeCertFile', 'degree-certs')}
                           />
                         )}
+
+                        {/* 学位证编号 */}
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            学位证编号
+                          </label>
+                          <input
+                            type="text"
+                            value={education.degreeCertNo || ''}
+                            onChange={(e) => updateEducation(index, 'degreeCertNo', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入学位证编号"
+                          />
+                        </div>
                       </div>
 
                       {/* 学位在线验证报告 */}
@@ -660,6 +702,20 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
                             onReupload={() => handleFileUpload(index, 'degreeVerifyFile', 'degree-verify')}
                           />
                         )}
+
+                        {/* 学位在线验证码 */}
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            学位在线验证码
+                          </label>
+                          <input
+                            type="text"
+                            value={education.degreeVerifyCode || ''}
+                            onChange={(e) => updateEducation(index, 'degreeVerifyCode', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入学位在线验证码"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
