@@ -121,6 +121,7 @@ export default function FormPage() {
             avatarUrl: result.data.person.avatarUrl || '',
             idCardFrontUrl: result.data.person.idCardFrontUrl || '',
             idCardBackUrl: result.data.person.idCardBackUrl || '',
+            socialInsuranceImageUrl: result.data.person.socialInsuranceImageUrl || '',
             // 工作相关字段
             employmentStatus: result.data.person.employmentStatus || '',
             workYear: result.data.person.workYear || '',
