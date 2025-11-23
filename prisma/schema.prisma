@@ -62,6 +62,8 @@ model HrPerson {
   age                   Int?
   birthDate             DateTime? @map("birth_date") @db.Date
   idCard                String?   @map("id_card") @db.VarChar(50)
+  idType                String?   @map("id_type") @db.VarChar(50)
+  idNumber              String?   @map("id_number") @db.VarChar(50)
   phone                 String?   @db.VarChar(20)
   wechat                String?   @db.VarChar(50)
   email                 String?   @db.VarChar(100)

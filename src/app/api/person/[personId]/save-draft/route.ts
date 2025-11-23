@@ -95,7 +95,7 @@ export async function POST(
   try {
     const { personId: personIdStr } = await params
     const personId = parseInt(personIdStr)
-    
+
     if (isNaN(personId)) {
       return NextResponse.json(
         { success: false, message: '无效的人员ID' },
@@ -160,6 +160,8 @@ export async function POST(
         if (processedBasicInfo.wechat) updateData.wechat = processedBasicInfo.wechat
         if (processedBasicInfo.email) updateData.email = processedBasicInfo.email
         if (processedBasicInfo.idCard) updateData.idCard = processedBasicInfo.idCard
+        if (processedBasicInfo.idType) updateData.idType = processedBasicInfo.idType
+        if (processedBasicInfo.idNumber) updateData.idNumber = processedBasicInfo.idNumber
         if (processedBasicInfo.nationality) updateData.nationality = processedBasicInfo.nationality
         if (processedBasicInfo.ethnicity) updateData.ethnicity = processedBasicInfo.ethnicity
         if (processedBasicInfo.politicalStatus) updateData.politicalStatus = processedBasicInfo.politicalStatus
