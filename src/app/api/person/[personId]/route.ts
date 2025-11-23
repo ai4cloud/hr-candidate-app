@@ -154,9 +154,16 @@ export async function GET(
           } else {
             formatted[key] = value.toISOString()
           }
+        } else if (value === null) {
+          // endDate 为 null 表示"至今"，需要保留 null 值
+          // 其他字段的 null 值转换为空字符串，避免 React 警告
+          if (key === 'endDate') {
+            formatted[key] = null
+          } else {
+            formatted[key] = ''
+          }
         } else {
-          // 将null值转换为空字符串，避免React警告
-          formatted[key] = value === null ? '' : value
+          formatted[key] = value
         }
       }
 
