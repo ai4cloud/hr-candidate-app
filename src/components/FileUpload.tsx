@@ -99,7 +99,7 @@ export default function FileUpload({
           size: result.data.size,
           type: result.data.type
         }
-        
+
         setUploadedFile(uploadedFileInfo)
         onFileUploaded(uploadedFileInfo.url, uploadedFileInfo.name)
       } else {
@@ -215,7 +215,7 @@ export default function FileUpload({
               <p className="text-xs text-gray-500">{formatFileSize(uploadedFile.size)}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {uploadedFile.url && (
               <a
@@ -237,7 +237,7 @@ export default function FileUpload({
           </div>
         </div>
       )}
-      
+
       {error && (
         <p className="text-sm text-red-600">{error}</p>
       )}

@@ -703,7 +703,7 @@ export default function FormPage() {
     <div className="min-h-screen bg-gray-50">
       {/* 顶部导航栏 - 固定在顶部 */}
       <div className="fixed top-0 left-0 right-0 bg-white shadow-sm border-b z-30">
-        <div className={`px-4 py-4 ${isSubmitted ? '' : 'pl-72'}`}>
+        <div className={`px-4 py-2 ${isSubmitted ? '' : 'pl-72'}`}>
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900">
               {isSubmitted ? '简历信息' : '简历信息填写'}
@@ -720,8 +720,8 @@ export default function FormPage() {
       {/* 左侧步骤导航 - 固定侧边栏 */}
       {!isSubmitted && (
         <div className="fixed left-0 top-0 h-full w-64 bg-white border-r shadow-lg z-20 overflow-y-auto">
-          <div className="p-4 pt-20">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">填写步骤</h2>
+          <div className="p-4 pt-15">
+            <h2 className="text-base font-semibold text-gray-900 mb-3">填写步骤</h2>
             <nav className="space-y-1">
               {STEPS.map((step, index) => (
                 <button
@@ -755,7 +755,7 @@ export default function FormPage() {
       )}
 
       {/* 主要内容区域 */}
-      <div className={`px-6 py-6 pt-24 ${isSubmitted ? '' : 'ml-64'}`}>
+      <div className={`px-6 py-6 pt-16 ${isSubmitted ? '' : 'ml-64'}`}>
         <div className="max-w-5xl">
           <div className="bg-white rounded-lg shadow-sm border p-6">
             {!isSubmitted && (
