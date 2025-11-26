@@ -146,7 +146,7 @@ EOF
                 script {
                     echo "构建 ${params.DEPLOY_ENV} 环境..."
                     sh """
-                        NODE_ENV=${params.DEPLOY_ENV} npm run build
+                        npm run build:${params.DEPLOY_ENV}
                     """
                 }
             }
@@ -161,7 +161,7 @@ EOF
                         # Debug: Print PATH and check for pm2
                         echo "Current PATH: \$PATH"
                         which pm2 || echo "pm2 not found in PATH"
-                        
+
                         # 检查 PM2 进程是否存在
                         if command -v pm2 >/dev/null 2>&1; then
                             PM2_CMD="pm2"
@@ -173,17 +173,17 @@ EOF
                             echo "Warning: pm2 not found, trying npx pm2..."
                             PM2_CMD="npx pm2"
                         fi
-                        
+
                         echo "Using PM2 command: \$PM2_CMD"
 
                         # 检查 PM2 进程是否存在
                         if \$PM2_CMD describe ${PM2_APP_NAME} > /dev/null 2>&1; then
-                            echo "重启现有应用..."
-                            NODE_ENV=${params.DEPLOY_ENV} \$PM2_CMD restart ${PM2_APP_NAME} --update-env
-                        else
-                            echo "启动新应用..."
-                            NODE_ENV=${params.DEPLOY_ENV} \$PM2_CMD start npm --name ${PM2_APP_NAME} -- run start:${params.DEPLOY_ENV}
+                            echo "停止并删除旧应用..."
+                            \$PM2_CMD delete ${PM2_APP_NAME}
                         fi
+
+                        echo "启动应用..."
+                        \$PM2_CMD start npm --name ${PM2_APP_NAME} -- run start:${params.DEPLOY_ENV}
 
                         # 保存 PM2 配置
                         \$PM2_CMD save

@@ -5,6 +5,25 @@
 
 export const config = {
   /**
+   * 环境配置
+   * NODE_ENV: Next.js 构建模式 (development/production/test)
+   * APP_ENV: 实际部署环境 (development/test/stage/production)
+   */
+  env: {
+    // Next.js 构建模式
+    nodeEnv: process.env.NODE_ENV || 'development',
+    // 实际部署环境
+    appEnv: process.env.APP_ENV || process.env.NODE_ENV || 'development',
+    // 是否为生产环境
+    isProduction: process.env.APP_ENV === 'production',
+    // 是否为预发布环境
+    isStage: process.env.APP_ENV === 'stage',
+    // 是否为测试环境
+    isTest: process.env.APP_ENV === 'test',
+    // 是否为开发环境
+    isDevelopment: process.env.APP_ENV === 'development' || !process.env.APP_ENV
+  },
+  /**
    * 多租户配置
    */
   tenant: {
