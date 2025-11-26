@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'NodeJS-20'  // 使用 Jenkins 中配置的 NodeJS 20 LTS
+    }
+
     parameters {
         choice(
             name: 'DEPLOY_ENV',
