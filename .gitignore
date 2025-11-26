@@ -42,3 +42,8 @@ next-env.d.ts
 
 /src/generated/prisma
 /.idea/
+
+# deployment
+deploy.config.local.sh
+deploy-package.tar.gz
+deploy-temp/
