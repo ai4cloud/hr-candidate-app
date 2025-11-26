@@ -668,14 +668,14 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
   useEffect(() => {
     if (searchTerm.trim()) {
       const allCities: City[] = []
-      
+
       // 添加热门城市
       HOT_CITIES.forEach(city => {
         if (city.name.includes(searchTerm)) {
           allCities.push(city)
         }
       })
-      
+
       // 添加省份城市
       PROVINCES_DATA.forEach(province => {
         province.cities.forEach(city => {
@@ -699,7 +699,7 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
           }
         })
       })
-      
+
       setFilteredCities(allCities)
     } else {
       setFilteredCities([])
@@ -848,7 +848,7 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div ref={modalRef} className="bg-white rounded-lg w-full max-w-4xl h-[600px] flex flex-col">
+      <div ref={modalRef} className="bg-white rounded-lg w-full max-w-4xl h-[80vh] md:h-[600px] flex flex-col m-4 md:m-0">
         {/* 头部 */}
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-medium">请选择城市</h2>
@@ -873,26 +873,24 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
 
         <div className="flex flex-1 overflow-hidden">
           {/* 左侧导航 */}
-          <div className="w-64 border-r bg-gray-50 overflow-y-auto">
+          <div className="w-24 md:w-64 border-r bg-gray-50 overflow-y-auto flex-shrink-0">
             {/* 标签切换 */}
             <div className="flex border-b">
               <button
                 onClick={() => setSelectedTab('domestic')}
-                className={`flex-1 py-3 text-sm font-medium ${
-                  selectedTab === 'domestic'
+                className={`flex-1 py-3 text-sm font-medium ${selectedTab === 'domestic'
                     ? 'text-blue-600 border-b-2 border-blue-600'
                     : 'text-gray-600 hover:text-gray-900'
-                }`}
+                  }`}
               >
                 国内
               </button>
               <button
                 onClick={() => setSelectedTab('overseas')}
-                className={`flex-1 py-3 text-sm font-medium ${
-                  selectedTab === 'overseas'
+                className={`flex-1 py-3 text-sm font-medium ${selectedTab === 'overseas'
                     ? 'text-blue-600 border-b-2 border-blue-600'
                     : 'text-gray-600 hover:text-gray-900'
-                }`}
+                  }`}
               >
                 海外
               </button>
@@ -907,9 +905,8 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
                       setSelectedProvince('')
                       setSelectedCity('')
                     }}
-                    className={`w-full text-left text-sm font-medium p-2 rounded hover:bg-blue-50 hover:text-blue-600 ${
-                      !selectedProvince ? 'text-blue-600 bg-blue-50' : 'text-gray-700'
-                    }`}
+                    className={`w-full text-left text-sm font-medium p-2 rounded hover:bg-blue-50 hover:text-blue-600 ${!selectedProvince ? 'text-blue-600 bg-blue-50' : 'text-gray-700'
+                      }`}
                   >
                     历史/热门
                   </button>
@@ -924,9 +921,8 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
                         setSelectedProvince(province.code)
                         setSelectedCity('') // 重置城市选择
                       }}
-                      className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-100 ${
-                        selectedProvince === province.code ? 'bg-gray-200 font-medium' : ''
-                      }`}
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-100 ${selectedProvince === province.code ? 'bg-gray-200 font-medium' : ''
+                        }`}
                     >
                       {province.name}
                     </button>
@@ -984,11 +980,10 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
                           <button
                             key={district.code}
                             onClick={() => handleDistrictSelect(district.name, city.name, province.name)}
-                            className={`px-3 py-2 text-sm border rounded text-center hover:border-blue-500 hover:text-blue-600 ${
-                              district.name.startsWith('全')
+                            className={`px-3 py-2 text-sm border rounded text-center hover:border-blue-500 hover:text-blue-600 ${district.name.startsWith('全')
                                 ? 'border-orange-300 text-orange-600 bg-orange-50'
                                 : 'border-gray-200'
-                            }`}
+                              }`}
                           >
                             {district.name}
                           </button>
@@ -1019,11 +1014,10 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
                                 handleCitySelect(city.name, province.name)
                               }
                             }}
-                            className={`px-3 py-2 text-sm border rounded text-center hover:border-blue-500 hover:text-blue-600 ${
-                              city.name.startsWith('全')
+                            className={`px-3 py-2 text-sm border rounded text-center hover:border-blue-500 hover:text-blue-600 ${city.name.startsWith('全')
                                 ? 'border-orange-300 text-orange-600 bg-orange-50'
                                 : 'border-gray-200'
-                            }`}
+                              }`}
                           >
                             {city.name}
                           </button>
@@ -1037,7 +1031,7 @@ export default function CitySelector({ value, onChange, onClose, isOpen }: CityS
               /* 热门城市 */
               <div className="p-4">
                 <div className="text-lg font-medium text-gray-900 mb-4">热门城市</div>
-                <div className="grid grid-cols-6 gap-2">
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                   {HOT_CITIES.map((city) => (
                     <button
                       key={city.code}
