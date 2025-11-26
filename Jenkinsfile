@@ -121,7 +121,7 @@ EOF
 
         stage('数据库迁移') {
             when {
-                expression { params.DEPLOY_ENV != 'production' }
+                expression { false }  // 禁用数据库迁移：数据库由管理端统一管理，候选人应用不负责 schema 更新
             }
             steps {
                 echo '执行数据库迁移...'
