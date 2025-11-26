@@ -39,13 +39,16 @@ class OAuth2Client {
     this.clientSecret = process.env.OAUTH2_CLIENT_SECRET || ''
     this.username = process.env.OAUTH2_USERNAME || ''
     this.password = process.env.OAUTH2_PASSWORD || ''
-    this.tokenUrl = process.env.OAUTH2_TOKEN_URL || ''
-    this.fileUploadUrl = process.env.OAUTH2_FILE_UPLOAD_URL || ''
     this.baseUrl = process.env.ADMIN_SERVICE_BASE_URL || ''
     this.tenantId = process.env.TENANT_ID || '600'
 
-    if (!this.clientId || !this.clientSecret || !this.username || !this.password || !this.tokenUrl) {
-      throw new Error('OAuth2 配置不完整，请检查环境变量')
+    // 基于 baseUrl 构建完整的 API 地址
+    // 优先使用环境变量中的完整 URL（向后兼容），否则使用 baseUrl 拼接
+    this.tokenUrl = process.env.OAUTH2_TOKEN_URL || `${this.baseUrl}/admin-api/system/oauth2/token`
+    this.fileUploadUrl = process.env.OAUTH2_FILE_UPLOAD_URL || `${this.baseUrl}/admin-api/infra/file/upload`
+
+    if (!this.clientId || !this.clientSecret || !this.username || !this.password || !this.baseUrl) {
+      throw new Error('OAuth2 配置不完整，请检查环境变量（需要 OAUTH2_CLIENT_ID, OAUTH2_CLIENT_SECRET, OAUTH2_USERNAME, OAUTH2_PASSWORD, ADMIN_SERVICE_BASE_URL）')
     }
   }
 
@@ -131,15 +134,6 @@ class OAuth2Client {
       console.error('获取OAuth2访问令牌失败:', error)
       throw error
     }
-  }
-
-  /**
-   * 清除token缓存
-   */
-  private clearTokenCache(): void {
-    this.cachedToken = null
-    this.tokenExpiresAt = 0
-    console.log('已清除OAuth2 token缓存')
   }
 
   /**
@@ -240,6 +234,7 @@ class OAuth2Client {
   clearTokenCache(): void {
     this.cachedToken = null
     this.tokenExpiresAt = 0
+    console.log('已清除OAuth2 token缓存')
   }
 
   /**

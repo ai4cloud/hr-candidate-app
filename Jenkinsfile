@@ -74,6 +74,7 @@ pipeline {
                         string(credentialsId: "oauth2-client-secret-${params.DEPLOY_ENV}", variable: 'OAUTH2_CLIENT_SECRET'),
                         string(credentialsId: "oauth2-username-${params.DEPLOY_ENV}", variable: 'OAUTH2_USERNAME'),
                         string(credentialsId: "oauth2-password-${params.DEPLOY_ENV}", variable: 'OAUTH2_PASSWORD'),
+                        string(credentialsId: "admin-service-base-url-${params.DEPLOY_ENV}", variable: 'ADMIN_SERVICE_BASE_URL'),
                         string(credentialsId: "tenant-id-${params.DEPLOY_ENV}", variable: 'TENANT_ID')
                     ]) {
                         // 生成 .env 文件
@@ -90,11 +91,9 @@ OAUTH2_CLIENT_ID="${OAUTH2_CLIENT_ID}"
 OAUTH2_CLIENT_SECRET="${OAUTH2_CLIENT_SECRET}"
 OAUTH2_USERNAME="${OAUTH2_USERNAME}"
 OAUTH2_PASSWORD="${OAUTH2_PASSWORD}"
-OAUTH2_TOKEN_URL="\${OAUTH2_TOKEN_URL_${params.DEPLOY_ENV}}"
-OAUTH2_FILE_UPLOAD_URL="\${OAUTH2_FILE_UPLOAD_URL_${params.DEPLOY_ENV}}"
 
-# 管理端服务地址
-ADMIN_SERVICE_BASE_URL="\${ADMIN_SERVICE_BASE_URL_${params.DEPLOY_ENV}}"
+# 管理端服务地址（Token URL 和文件上传 URL 会自动基于此地址生成）
+ADMIN_SERVICE_BASE_URL="${ADMIN_SERVICE_BASE_URL}"
 
 # 多租户配置
 TENANT_ID="${TENANT_ID}"
