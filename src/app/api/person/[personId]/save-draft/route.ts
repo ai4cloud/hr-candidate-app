@@ -243,14 +243,14 @@ export async function POST(
           if (edu.schoolName && edu.startDate) {
             // 注意：不要传递id字段，数据库id是自增的
             // 也不要传递personId字段，通过关系连接
-            const educationData: Record<string, unknown> = {
+            const educationData: any = {
               schoolName: edu.schoolName,  // 对应数据库 school_name
               // 数据库必填字段，草稿状态下提供默认值
               major: edu.major || '',
               educationLevel: edu.educationLevel || '',
               degree: edu.degree || '',
-              startDate: new Date(edu.startDate), // startDate是必填的
-              endDate: edu.endDate ? new Date(edu.endDate) : null, // endDate可以为null表示至今
+              startDate: new Date(edu.startDate as string), // startDate是必填的
+              endDate: edu.endDate ? new Date(edu.endDate as string) : null, // endDate可以为null表示至今
               isFullTime: edu.isFullTime !== undefined ? edu.isFullTime : true,
               tenantId: BigInt(getDefaultTenantId()),
               createTime: new Date(),
@@ -304,8 +304,8 @@ export async function POST(
         for (const work of workExperiences) {
           // 只要有开始时间就保存，结束时间可以为空（在职状态）
           if (work.startDate) {
-            const workData: Record<string, unknown> = {
-              startDate: new Date(work.startDate),
+            const workData: any = {
+              startDate: new Date(work.startDate as string),
               tenantId: BigInt(getDefaultTenantId()),
               createTime: new Date(),
               updateTime: new Date(),
@@ -314,7 +314,7 @@ export async function POST(
 
             // 处理结束时间：如果有值就设置，否则设置为null（在职状态）
             if (work.endDate) {
-              workData.endDate = new Date(work.endDate)
+              workData.endDate = new Date(work.endDate as string)
             } else {
               workData.endDate = null
             }
@@ -338,8 +338,8 @@ export async function POST(
 
             // 收集有效的工作经历用于计算
             validWorkExperiences.push({
-              startDate: work.startDate,
-              endDate: work.endDate
+              startDate: work.startDate as string | Date,
+              endDate: work.endDate as string | Date
             })
 
             // 如果是当前在职的工作经历（endDate为null或空字符串），记录下来
@@ -445,7 +445,7 @@ export async function POST(
         // 插入新的技能
         for (const skill of skills) {
           if (skill.skillName) {
-            const skillData: Record<string, unknown> = {
+            const skillData: any = {
               personId: BigInt(personId),
               skillName: skill.skillName as string,
               proficiencyLevel: (skill.proficiencyLevel as string | undefined) ?? null,
@@ -458,7 +458,7 @@ export async function POST(
 
             // 处理技能ID（技能库技能有ID，自定义技能为null）
             if (skill.skillId !== undefined && skill.skillId !== null) {
-              skillData.skillId = BigInt(skill.skillId)
+              skillData.skillId = BigInt(skill.skillId as string | number)
             } else {
               skillData.skillId = null
             }

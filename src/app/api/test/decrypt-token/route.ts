@@ -9,13 +9,20 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url)
   const token = searchParams.get('token')
-  
+
   if (!token) {
     return NextResponse.json({ error: '缺少token参数' }, { status: 400 })
   }
 
-  const key = process.env.ACCESS_TOKEN_AES_KEY || 'yudao-hr-aes-key'
-  const results: Array<{ method: string; result?: string; error?: string }> = []
+  const key = process.env.ACCESS_TOKEN_AES_KEY || '_deep-hr-aes-key'
+  const results: Array<{
+    method: string;
+    result?: string;
+    error?: string;
+    success: boolean;
+    length?: number;
+    isJson?: boolean
+  }> = []
 
   // 尝试不同的解密方式
   const methods = [

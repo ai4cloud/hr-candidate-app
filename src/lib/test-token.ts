@@ -8,7 +8,7 @@ import CryptoJS from 'crypto-js'
  * @returns 加密的token
  */
 export function generateTestToken(personId: number, mobile: string, hoursValid: number = 24): string {
-  const key = process.env.ACCESS_TOKEN_AES_KEY || 'yudao-hr-aes-key'
+  const key = process.env.ACCESS_TOKEN_AES_KEY || '_deep-hr-aes-key'
 
   // 创建token数据（与管理端格式保持一致）
   const tokenData = {
@@ -46,7 +46,7 @@ export function testTokenDecryption() {
 
   // 测试解密
   try {
-    const key = process.env.ACCESS_TOKEN_AES_KEY || 'yudao-hr-aes-key'
+    const key = process.env.ACCESS_TOKEN_AES_KEY || '_deep-hr-aes-key'
     const bytes = CryptoJS.AES.decrypt(token, key)
     const decrypted = bytes.toString(CryptoJS.enc.Utf8)
     const parsed = JSON.parse(decrypted)

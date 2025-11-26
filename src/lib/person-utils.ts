@@ -15,7 +15,7 @@ export function parseBirthDateFromIdCard(idCard: string): string | null {
 
   // 去除空格和特殊字符
   const cleanIdCard = idCard.trim().replace(/[^0-9X]/gi, '')
-  
+
   // 验证身份证号格式
   if (!/^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dX]$/i.test(cleanIdCard)) {
     return null
@@ -30,7 +30,7 @@ export function parseBirthDateFromIdCard(idCard: string): string | null {
     // 验证日期有效性
     const birthDate = new Date(`${year}-${month}-${day}`)
     const currentYear = new Date().getFullYear()
-    
+
     // 检查年份范围 (1900-当前年份)
     const birthYear = parseInt(year)
     if (birthYear < 1900 || birthYear > currentYear) {
@@ -38,9 +38,9 @@ export function parseBirthDateFromIdCard(idCard: string): string | null {
     }
 
     // 检查日期是否有效
-    if (birthDate.getFullYear() !== birthYear || 
-        birthDate.getMonth() !== parseInt(month) - 1 || 
-        birthDate.getDate() !== parseInt(day)) {
+    if (birthDate.getFullYear() !== birthYear ||
+      birthDate.getMonth() !== parseInt(month) - 1 ||
+      birthDate.getDate() !== parseInt(day)) {
       return null
     }
 
@@ -193,7 +193,7 @@ export function validateIdCard(idCard: string): boolean {
   }
 
   const cleanIdCard = idCard.trim().replace(/[^0-9X]/gi, '')
-  
+
   // 基本格式验证
   if (!/^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dX]$/i.test(cleanIdCard)) {
     return false
@@ -229,7 +229,7 @@ export function calculateWorkInfoFromExperiences(workExperiences: Array<{
     const startDates = validExperiences.map(exp => {
       const date = typeof exp.startDate === 'string' ? new Date(exp.startDate) : exp.startDate
       return date
-    }).filter(date => !isNaN(date.getTime()))
+    }).filter((date): date is Date => date !== null && !isNaN(date.getTime()))
 
     if (startDates.length === 0) {
       return { workStartDate: null, workYear: null }
@@ -263,7 +263,7 @@ export function calculateWorkInfoFromExperiences(workExperiences: Array<{
 
       // 计算这段工作经历的月数
       const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 +
-                    (endDate.getMonth() - startDate.getMonth())
+        (endDate.getMonth() - startDate.getMonth())
 
       // 如果结束日期的日期小于开始日期的日期，减去一个月
       if (endDate.getDate() < startDate.getDate()) {
