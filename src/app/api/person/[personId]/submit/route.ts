@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { personId: string } }
+  { params }: { params: Promise<{ personId: string }> }
 ) {
   try {
-    const personId = params.personId
+    const { personId } = await params
 
     // 更新person的recordStatus为submitted
     const updatedPerson = await prisma.hrPerson.update({
