@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import BasicInfoForm from '@/components/forms/BasicInfoForm'
-import JobExpectationForm from '@/components/forms/JobExpectationForm'
-import EducationForm from '@/components/forms/EducationForm'
-import WorkExperienceForm from '@/components/forms/WorkExperienceForm'
-import ProjectExperienceForm from '@/components/forms/ProjectExperienceForm'
-import SkillsForm from '@/components/forms/SkillsForm'
+import BasicInfoForm, { BasicInfoData } from '@/components/forms/BasicInfoForm'
+import JobExpectationForm, { JobExpectationData } from '@/components/forms/JobExpectationForm'
+import EducationForm, { EducationData } from '@/components/forms/EducationForm'
+import WorkExperienceForm, { WorkExperienceData } from '@/components/forms/WorkExperienceForm'
+import ProjectExperienceForm, { ProjectExperienceData } from '@/components/forms/ProjectExperienceForm'
+import SkillsForm, { SkillData } from '@/components/forms/SkillsForm'
 import PreviewForm from '@/components/forms/PreviewForm'
 
 // 步骤定义
@@ -32,12 +32,12 @@ export default function FormPage() {
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null)
 
   // 表单数据状态
-  const [basicInfo, setBasicInfo] = useState({})
-  const [jobExpectations, setJobExpectations] = useState([])
-  const [educations, setEducations] = useState([])
-  const [workExperiences, setWorkExperiences] = useState([])
-  const [projectExperiences, setProjectExperiences] = useState([])
-  const [skills, setSkills] = useState([])
+  const [basicInfo, setBasicInfo] = useState<Partial<BasicInfoData>>({})
+  const [jobExpectations, setJobExpectations] = useState<JobExpectationData[]>([])
+  const [educations, setEducations] = useState<EducationData[]>([])
+  const [workExperiences, setWorkExperiences] = useState<WorkExperienceData[]>([])
+  const [projectExperiences, setProjectExperiences] = useState<ProjectExperienceData[]>([])
+  const [skills, setSkills] = useState<SkillData[]>([])
   const [certificates, setCertificates] = useState([])
   const [trainings, setTrainings] = useState([])
   const [languages, setLanguages] = useState([])
@@ -420,14 +420,14 @@ export default function FormPage() {
           <button
             onClick={() => {
               // 触发求职期望添加逻辑
-              const newJobExpectation = {
-                id: Date.now(),
-                expectedPosition: '',
-                expectedIndustry: '',
-                expectedCity: '',
-                expectedSalary: ''
-              }
               setJobExpectations(prev => {
+                const newJobExpectation = {
+                  id: String(Date.now()),
+                  expectedPosition: '',
+                  expectedIndustry: '',
+                  expectedCity: '',
+                  expectedSalary: ''
+                }
                 const newList = [...prev, newJobExpectation]
                 // 自动展开新添加的记录
                 setTimeout(() => {
@@ -442,8 +442,8 @@ export default function FormPage() {
             }}
             disabled={jobExpectations.length >= 3}
             className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${jobExpectations.length >= 3
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -531,16 +531,19 @@ export default function FormPage() {
           <button
             onClick={() => {
               // 触发项目经历添加逻辑
-              const newProjectExperience = {
-                id: Date.now(),
-                name: '',
-                role: '',
-                startDate: '',
-                endDate: '',
-                description: '',
-                technologies: ''
-              }
               setProjectExperiences(prev => {
+                const newProjectExperience = {
+                  id: String(Date.now()),
+                  projectName: '',
+                  companyName: '',
+                  startDate: '',
+                  endDate: '',
+                  projectDesc: '',
+                  projectRole: '',
+                  technologies: '',
+                  projectResponsibility: '',
+                  projectAchievement: ''
+                }
                 const newList = [...prev, newProjectExperience]
                 // 自动展开新添加的记录
                 setTimeout(() => {
@@ -650,12 +653,12 @@ export default function FormPage() {
         return (
           <PreviewForm
             data={{
-              person: basicInfo,
-              jobExpectations: jobExpectations,
-              educations: educations,
-              workExperiences: workExperiences,
-              projectExperiences: projectExperiences,
-              skills: skills,
+              person: basicInfo as any,
+              jobExpectations: jobExpectations as any,
+              educations: educations as any,
+              workExperiences: workExperiences as any,
+              projectExperiences: projectExperiences as any,
+              skills: skills as any,
               certificates: [],
               trainings: [],
               languages: []
@@ -703,23 +706,39 @@ export default function FormPage() {
     <div className="min-h-screen bg-gray-50">
       {/* 顶部导航栏 - 固定在顶部 */}
       <div className="fixed top-0 left-0 right-0 bg-white shadow-sm border-b z-30">
-        <div className={`px-4 py-2 ${isSubmitted ? '' : 'pl-72'}`}>
+        <div className={`px-4 py-2 ${isSubmitted ? '' : 'md:pl-72'}`}>
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900">
+            <h1 className="text-lg md:text-xl font-semibold text-gray-900 truncate">
               {isSubmitted ? '简历信息' : '简历信息填写'}
             </h1>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs md:text-sm text-gray-500 flex-shrink-0 ml-2">
               {lastSaveTime && !isSubmitted && (
-                <span>最后保存: {lastSaveTime.toLocaleTimeString()}</span>
+                <span>{lastSaveTime.toLocaleTimeString()} 保存</span>
               )}
             </div>
           </div>
+
+          {/* 移动端进度条 - 仅在移动端显示 */}
+          {!isSubmitted && (
+            <div className="mt-2 md:hidden">
+              <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                <span>步骤 {currentStep + 1}/{STEPS.length}: {STEPS[currentStep].title}</span>
+                <span>{Math.round(((currentStep + 1) / STEPS.length) * 100)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                <div
+                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* 左侧步骤导航 - 固定侧边栏 */}
+      {/* 左侧步骤导航 - 固定侧边栏 (仅PC端显示) */}
       {!isSubmitted && (
-        <div className="fixed left-0 top-0 h-full w-64 bg-white border-r shadow-lg z-20 overflow-y-auto">
+        <div className="hidden md:block fixed left-0 top-0 h-full w-64 bg-white border-r shadow-lg z-20 overflow-y-auto">
           <div className="p-4 pt-15">
             <h2 className="text-base font-semibold text-gray-900 mb-3">填写步骤</h2>
             <nav className="space-y-1">
@@ -728,10 +747,10 @@ export default function FormPage() {
                   key={step.id}
                   onClick={() => handleStepChange(index)}
                   className={`w-full flex items-center space-x-2 px-3 py-2 rounded-md text-left transition-all duration-200 ${index === currentStep
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : index < currentStep
-                        ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
-                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : index < currentStep
+                      ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
+                      : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
                     }`}
                 >
                   <span className="text-lg flex-shrink-0">{step.icon}</span>
@@ -755,23 +774,25 @@ export default function FormPage() {
       )}
 
       {/* 主要内容区域 */}
-      <div className={`px-6 py-6 pt-16 ${isSubmitted ? '' : 'ml-64'}`}>
-        <div className="max-w-5xl">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+      <div className={`px-3 md:px-6 py-4 md:py-6 pt-24 md:pt-16 ${isSubmitted ? '' : 'ml-0 md:ml-64'}`}>
+        <div className="max-w-5xl mx-auto">
+          <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6">
             {!isSubmitted && (
-              <div className="mb-6">
-                <div className="flex items-center justify-between">
+              <div className="mb-4 md:mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
                   <div>
                     <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-                      <span className="text-2xl mr-3">{STEPS[currentStep].icon}</span>
+                      <span className="text-xl md:text-2xl mr-2 md:mr-3">{STEPS[currentStep].icon}</span>
                       {STEPS[currentStep].title}
                     </h2>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-xs md:text-sm text-gray-600 mt-1 ml-8 md:ml-10">
                       步骤 {currentStep + 1} / {STEPS.length}
                     </p>
                   </div>
                   {/* 添加按钮区域 - 根据当前步骤显示对应的添加按钮 */}
-                  {renderAddButton()}
+                  <div className="w-full md:w-auto">
+                    {renderAddButton()}
+                  </div>
                 </div>
               </div>
             )}
@@ -785,21 +806,21 @@ export default function FormPage() {
 
             {/* 底部导航按钮 */}
             {!isSubmitted && (
-              <div className="flex justify-between items-center mt-8 pt-6 border-t">
+              <div className="flex flex-col-reverse md:flex-row justify-between items-center mt-6 md:mt-8 pt-4 md:pt-6 border-t gap-4 md:gap-0">
                 <button
                   onClick={() => handleStepChange(currentStep - 1)}
                   disabled={currentStep === 0}
-                  className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full md:w-auto px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   上一步
                 </button>
 
-                <div className="flex items-center space-x-3">
+                <div className="flex flex-col md:flex-row items-center gap-3 md:gap-3 w-full md:w-auto">
                   {/* 保存提示消息 - 内联显示 */}
                   {saveMessage && (
-                    <div className={`flex items-center space-x-2 px-3 py-1 rounded-md text-sm ${saveMessage.type === 'success'
-                        ? 'bg-green-50 text-green-700'
-                        : 'bg-red-50 text-red-700'
+                    <div className={`flex items-center space-x-2 px-3 py-1 rounded-md text-sm w-full md:w-auto justify-center ${saveMessage.type === 'success'
+                      ? 'bg-green-50 text-green-700'
+                      : 'bg-red-50 text-red-700'
                       }`}>
                       <div className="flex-shrink-0">
                         {saveMessage.type === 'success' ? (
@@ -819,7 +840,7 @@ export default function FormPage() {
                   <button
                     onClick={handleAutoSave}
                     disabled={saving}
-                    className={`px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 ${saving ? 'opacity-50 cursor-not-allowed' : ''
+                    className={`w-full md:w-auto px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 ${saving ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                   >
                     {saving ? '保存中...' : '保存草稿'}
@@ -829,7 +850,7 @@ export default function FormPage() {
                     isSubmitted ? (
                       <button
                         onClick={handleClosePage}
-                        className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                        className="w-full md:w-auto px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
                       >
                         关闭页面
                       </button>
@@ -837,7 +858,7 @@ export default function FormPage() {
                       <button
                         onClick={handleSubmit}
                         disabled={submitting}
-                        className={`px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 ${submitting ? 'opacity-50 cursor-not-allowed' : ''
+                        className={`w-full md:w-auto px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 ${submitting ? 'opacity-50 cursor-not-allowed' : ''
                           }`}
                       >
                         {submitting ? '提交中...' : '提交简历'}
@@ -846,7 +867,7 @@ export default function FormPage() {
                   ) : (
                     <button
                       onClick={() => handleStepChange(currentStep + 1)}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      className="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                     >
                       下一步
                     </button>

@@ -6,7 +6,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import DatePickerWithToday from '@/components/ui/DatePickerWithToday'
 
 // 项目经历数据类型 - 基于数据库表结构
-interface ProjectExperienceData {
+export interface ProjectExperienceData {
   id?: string
   projectName: string
   companyName: string
@@ -53,7 +53,7 @@ export default function ProjectExperienceForm({ data, onChange }: ProjectExperie
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => {}
+    onConfirm: () => { }
   })
 
   // 同步外部数据变化
@@ -236,25 +236,27 @@ export default function ProjectExperienceForm({ data, onChange }: ProjectExperie
             <div key={project.id || index} className="border border-gray-200 rounded-lg p-4">
               {/* 项目经历标题栏 */}
               <div className="flex items-center justify-between mb-3">
-                <button
+                <div
                   onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
-                  className="flex items-center gap-2 text-left flex-1"
+                  className="flex items-center gap-2 text-left flex-1 cursor-pointer"
+                  role="button"
+                  tabIndex={0}
                 >
                   <Code className="w-5 h-5 text-blue-600" />
                   <div>
-                    <h3 className="font-medium text-gray-900">
-                      {project.projectName || '项目名称'}
+                    <h3 className="font-medium text-gray-900 flex flex-col md:flex-row md:items-center">
+                      <span>{project.projectName || '项目名称'}</span>
                       {formatDateRange(project.startDate, project.endDate) && (
-                        <span className="ml-2 text-xs text-gray-500 font-normal">
+                        <span className="text-xs text-gray-500 font-normal mt-1 md:mt-0 md:ml-2">
                           {formatDateRange(project.startDate, project.endDate)}
                         </span>
                       )}
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 mt-1">
                       {project.companyName || '公司名称'} · {project.projectRole || '项目角色'}
                     </p>
                   </div>
-                </button>
+                </div>
                 <button
                   onClick={() => removeProjectExperience(index)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"

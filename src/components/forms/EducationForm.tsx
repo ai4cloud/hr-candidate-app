@@ -7,7 +7,7 @@ import FileUpload from '@/components/FileUpload'
 import DatePickerWithToday from '@/components/ui/DatePickerWithToday'
 
 // 教育经历数据类型 - 基于数据库表结构
-interface EducationData {
+export interface EducationData {
   id?: string
   schoolName: string
   startDate: string
@@ -122,7 +122,7 @@ function FilePreview({
 
 export default function EducationForm({ data, onChange }: EducationFormProps) {
   // 文件上传处理函数
-  const handleFileUpload = (index: number, field: string, directory: string) => {
+  const handleFileUpload = (index: number, field: keyof EducationData, directory: string) => {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = 'image/*,.pdf,.doc,.docx'
@@ -167,7 +167,7 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => {}
+    onConfirm: () => { }
   })
 
   // 根据value获取label的辅助函数
@@ -399,25 +399,27 @@ export default function EducationForm({ data, onChange }: EducationFormProps) {
             <div key={education.id || index} className="border border-gray-200 rounded-lg p-4">
               {/* 教育经历标题栏 */}
               <div className="flex items-center justify-between mb-3">
-                <button
+                <div
                   onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
-                  className="flex items-center gap-2 text-left flex-1"
+                  className="flex items-center gap-2 text-left flex-1 cursor-pointer"
+                  role="button"
+                  tabIndex={0}
                 >
                   <GraduationCap className="w-5 h-5 text-blue-600" />
                   <div>
-                    <h3 className="font-medium text-gray-900">
-                      {education.schoolName || '学校名称'}
+                    <h3 className="font-medium text-gray-900 flex flex-col md:flex-row md:items-center">
+                      <span>{education.schoolName || '学校名称'}</span>
                       {formatDateRange(education.startDate, education.endDate) && (
-                        <span className="ml-2 text-xs text-gray-500 font-normal">
+                        <span className="text-xs text-gray-500 font-normal mt-1 md:mt-0 md:ml-2">
                           {formatDateRange(education.startDate, education.endDate)}
                         </span>
                       )}
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 mt-1">
                       {education.major || '专业'} · {getDictLabel('education_level', education.educationLevel) || '学历'}
                     </p>
                   </div>
-                </button>
+                </div>
                 <button
                   onClick={() => removeEducation(index)}
                   className="p-1 text-red-500 hover:bg-red-50 rounded"

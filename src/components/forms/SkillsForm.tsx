@@ -5,7 +5,7 @@ import { Plus, Trash2, Zap, Search } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 // 技能数据类型
-interface SkillData {
+export interface SkillData {
   id?: string
   skillId?: number | null
   skillName: string
@@ -66,7 +66,7 @@ export default function SkillsForm({ data, onChange, onValidationChange }: Skill
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => {}
+    onConfirm: () => { }
   })
 
   // 同步外部数据变化
@@ -344,28 +344,30 @@ export default function SkillsForm({ data, onChange, onValidationChange }: Skill
             <div key={skill.id || index} className="border border-gray-200 rounded-lg p-4">
               {/* 技能标题栏 */}
               <div className="flex items-center justify-between mb-3">
-                <button
+                <div
                   onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
-                  className="flex items-center gap-2 text-left flex-1"
+                  className="flex items-center gap-2 text-left flex-1 cursor-pointer"
+                  role="button"
+                  tabIndex={0}
                 >
                   <Zap className="w-5 h-5 text-blue-600" />
                   <div>
-                    <h3 className="font-medium text-gray-900">
-                      {skill.skillName || '技能名称'}
+                    <h3 className="font-medium text-gray-900 flex flex-col md:flex-row md:items-center">
+                      <span>{skill.skillName || '技能名称'}</span>
                       {skill.proficiencyLevel && (
-                        <span className="ml-2 text-xs text-gray-500 font-normal">
+                        <span className="text-xs text-gray-500 font-normal mt-1 md:mt-0 md:ml-2">
                           {dictData.proficiency_level?.find(p => p.value === skill.proficiencyLevel)?.label}
                         </span>
                       )}
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 mt-1">
                       {skill.yearsOfExperience ? `${skill.yearsOfExperience}年经验` : '经验待填写'}
                       {skill.sourceType === 'custom' && (
                         <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-1 rounded">自定义</span>
                       )}
                     </p>
                   </div>
-                </button>
+                </div>
                 <button
                   onClick={() => removeSkill(index)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
@@ -467,8 +469,8 @@ export default function SkillsForm({ data, onChange, onValidationChange }: Skill
 
       {/* 技能选择弹窗 */}
       {showSkillSelector && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-4xl h-[600px] flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 md:p-0">
+          <div className="bg-white rounded-lg w-full max-w-4xl h-[80vh] md:h-[600px] flex flex-col">
             {/* 固定头部 */}
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-lg font-medium text-gray-900">
@@ -497,21 +499,19 @@ export default function SkillsForm({ data, onChange, onValidationChange }: Skill
             <div className="flex border-b">
               <button
                 onClick={() => setSkillSelectorMode('catalog')}
-                className={`px-4 py-2 font-medium ${
-                  skillSelectorMode === 'catalog'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`px-4 py-2 font-medium ${skillSelectorMode === 'catalog'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 从技能库选择
               </button>
               <button
                 onClick={() => setSkillSelectorMode('custom')}
-                className={`px-4 py-2 font-medium ${
-                  skillSelectorMode === 'custom'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`px-4 py-2 font-medium ${skillSelectorMode === 'custom'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 输入自定义技能
               </button>

@@ -176,7 +176,7 @@ export default function FileUpload({
           // 默认样式 - 用于其他文件上传
           <div
             className={`
-              border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer
+              border-2 border-dashed border-gray-300 rounded-lg p-4 md:p-6 text-center cursor-pointer
               hover:border-blue-400 hover:bg-blue-50 transition-colors
               ${uploading ? 'opacity-50 cursor-not-allowed' : ''}
             `}
@@ -191,14 +191,14 @@ export default function FileUpload({
               disabled={uploading}
             />
 
-            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+            <Upload className="h-6 w-6 md:h-8 md:w-8 text-gray-400 mx-auto mb-2" />
 
             {uploading ? (
-              <p className="text-sm text-gray-600">正在上传...</p>
+              <p className="text-xs md:text-sm text-gray-600">正在上传...</p>
             ) : (
               <>
-                <p className="text-sm text-gray-600 mb-1">{placeholder}</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs md:text-sm text-gray-600 mb-1">{placeholder}</p>
+                <p className="text-[10px] md:text-xs text-gray-400">
                   {accept && `支持格式: ${accept}`}
                   {maxSize && ` • 最大 ${maxSize}MB`}
                 </p>
@@ -207,7 +207,7 @@ export default function FileUpload({
           </div>
         )
       ) : (
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+        <div className="flex items-center justify-between p-2 md:p-3 bg-gray-50 rounded-lg border">
           <div className="flex items-center space-x-3">
             {getFileIcon(uploadedFile.type)}
             <div>

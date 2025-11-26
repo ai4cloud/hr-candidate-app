@@ -57,7 +57,7 @@ export default function IndustrySelector({ value, onChange, onClose, isOpen }: I
   // 搜索行业
   useEffect(() => {
     if (searchTerm.trim()) {
-      const filtered = industries.filter(industry => 
+      const filtered = industries.filter(industry =>
         industry.name.includes(searchTerm) && industry.enabled
       )
       setFilteredIndustries(filtered)
@@ -113,14 +113,14 @@ export default function IndustrySelector({ value, onChange, onClose, isOpen }: I
   if (!isOpen) return null
 
   const firstLevelIndustries = getFirstLevelIndustries()
-  const selectedIndustry = selectedFirstLevel ? 
+  const selectedIndustry = selectedFirstLevel ?
     industries.find(i => i.id === selectedFirstLevel) : null
-  const secondLevelIndustries = selectedFirstLevel ? 
+  const secondLevelIndustries = selectedFirstLevel ?
     getSecondLevelIndustries(selectedFirstLevel) : []
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div ref={modalRef} className="bg-white rounded-lg w-full max-w-4xl h-[600px] flex flex-col">
+      <div ref={modalRef} className="bg-white rounded-lg w-full max-w-4xl h-[80vh] md:h-[600px] flex flex-col m-4 md:m-0">
         {/* 头部 */}
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-medium">请选择行业</h2>
@@ -145,7 +145,7 @@ export default function IndustrySelector({ value, onChange, onClose, isOpen }: I
 
         <div className="flex flex-1 overflow-hidden">
           {/* 左侧一级行业 */}
-          <div className="w-64 border-r bg-gray-50 overflow-y-auto">
+          <div className="w-24 md:w-64 border-r bg-gray-50 overflow-y-auto flex-shrink-0">
             <div className="p-2">
               <div className="text-sm font-medium text-gray-700 mb-2">一级行业</div>
               {loading ? (
@@ -155,9 +155,8 @@ export default function IndustrySelector({ value, onChange, onClose, isOpen }: I
                   <button
                     key={industry.id}
                     onClick={() => setSelectedFirstLevel(industry.id)}
-                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 flex items-center justify-between ${
-                      selectedFirstLevel === industry.id ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
-                    }`}
+                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 flex items-center justify-between ${selectedFirstLevel === industry.id ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
+                      }`}
                   >
                     <span>{industry.name}</span>
                     <ChevronRight className="w-4 h-4" />
@@ -203,7 +202,7 @@ export default function IndustrySelector({ value, onChange, onClose, isOpen }: I
                   >
                     {selectedIndustry.name}（通用）
                   </button>
-                  
+
                   {/* 二级行业选项 */}
                   {secondLevelIndustries.map((industry) => (
                     <button
@@ -214,7 +213,7 @@ export default function IndustrySelector({ value, onChange, onClose, isOpen }: I
                       {industry.name}
                     </button>
                   ))}
-                  
+
                   {secondLevelIndustries.length === 0 && (
                     <div className="text-center text-gray-500 py-4">该行业暂无细分类别</div>
                   )}

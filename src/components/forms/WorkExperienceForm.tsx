@@ -8,7 +8,7 @@ import CitySelector from '@/components/ui/CitySelector'
 import IndustrySelector from '@/components/ui/IndustrySelector'
 
 // 工作经历数据类型 - 基于数据库表结构
-interface WorkExperienceData {
+export interface WorkExperienceData {
   id?: string
   companyName: string
   startDate: string
@@ -18,6 +18,7 @@ interface WorkExperienceData {
   location: string
   department: string
   responsibilityPerformance: string
+  description?: string
 }
 
 interface WorkExperienceFormProps {
@@ -38,7 +39,7 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => {}
+    onConfirm: () => { }
   })
   const [citySelectorState, setCitySelectorState] = useState<{
     isOpen: boolean
@@ -255,25 +256,27 @@ export default function WorkExperienceForm({ data, onChange }: WorkExperienceFor
             <div key={workExperience.id || index} className="border border-gray-200 rounded-lg p-4">
               {/* 工作经历标题栏 */}
               <div className="flex items-center justify-between mb-3">
-                <button
+                <div
                   onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
-                  className="flex items-center gap-2 text-left flex-1"
+                  className="flex items-center gap-2 text-left flex-1 cursor-pointer"
+                  role="button"
+                  tabIndex={0}
                 >
                   <Briefcase className="w-5 h-5 text-blue-600" />
                   <div>
-                    <h3 className="font-medium text-gray-900">
-                      {workExperience.companyName || '公司名称'}
+                    <h3 className="font-medium text-gray-900 flex flex-col md:flex-row md:items-center">
+                      <span>{workExperience.companyName || '公司名称'}</span>
                       {formatDateRange(workExperience.startDate, workExperience.endDate) && (
-                        <span className="ml-2 text-xs text-gray-500 font-normal">
+                        <span className="text-xs text-gray-500 font-normal mt-1 md:mt-0 md:ml-2">
                           {formatDateRange(workExperience.startDate, workExperience.endDate)}
                         </span>
                       )}
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 mt-1">
                       {workExperience.position || '职位'} · {workExperience.industry || '行业'}
                     </p>
                   </div>
-                </button>
+                </div>
                 <button
                   onClick={() => removeWorkExperience(index)}
                   className="p-1 text-red-500 hover:bg-red-50 rounded"

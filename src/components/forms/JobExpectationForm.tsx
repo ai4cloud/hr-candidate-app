@@ -7,7 +7,7 @@ import CitySelector from '@/components/ui/CitySelector'
 import IndustrySelector from '@/components/ui/IndustrySelector'
 
 // 求职期望数据类型 - 基于数据库表结构
-interface JobExpectationData {
+export interface JobExpectationData {
   id?: string
   expectedPosition: string
   expectedIndustry: string
@@ -47,7 +47,7 @@ export default function JobExpectationForm({ data, onChange }: JobExpectationFor
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => {}
+    onConfirm: () => { }
   })
 
   // 同步外部数据变化
@@ -95,7 +95,7 @@ export default function JobExpectationForm({ data, onChange }: JobExpectationFor
   const removeJobExpectation = (index: number) => {
     const jobExpectation = jobExpectations[index]
     const positionName = jobExpectation.expectedPosition || '该求职期望'
-    
+
     // 显示确认对话框
     setConfirmDialog({
       isOpen: true,
@@ -106,14 +106,14 @@ export default function JobExpectationForm({ data, onChange }: JobExpectationFor
         const updatedJobExpectations = jobExpectations.filter((_, i) => i !== index)
         setJobExpectations(updatedJobExpectations)
         onChange(updatedJobExpectations)
-        
+
         // 如果删除的是当前展开的求职期望，关闭展开状态
         if (expandedIndex === index) {
           setExpandedIndex(null)
         } else if (expandedIndex !== null && expandedIndex > index) {
           setExpandedIndex(expandedIndex - 1)
         }
-        
+
         // 关闭确认对话框
         setConfirmDialog(prev => ({ ...prev, isOpen: false }))
       }
@@ -280,7 +280,7 @@ export default function JobExpectationForm({ data, onChange }: JobExpectationFor
                         />
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                           <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
                         </div>
                       </div>

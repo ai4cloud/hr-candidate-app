@@ -6,7 +6,7 @@ import FileUpload from '@/components/FileUpload'
 import { User, FileText, Eye, Download, Upload, Trash2, CreditCard, Phone, MapPin } from 'lucide-react'
 
 // 基本信息数据类型
-interface BasicInfoData {
+export interface BasicInfoData {
     name: string
     gender: string
     age: number | null
@@ -36,6 +36,12 @@ interface BasicInfoData {
     // 工作相关字段
     employmentStatus: string
     workYear: string
+    workStartDate?: string
+    educationLevel?: string
+    degree?: string
+    school?: string
+    companyName?: string
+    position?: string
 }
 
 interface BasicInfoFormProps {
@@ -388,13 +394,13 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
             {/* 头部：头像与核心信息 */}
-            <div className="flex items-center space-x-6 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+            <div className="flex flex-row items-start space-x-4 md:space-x-6 bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
                 {/* 头像上传区域 */}
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-col md:flex-row items-center md:items-center space-y-2 md:space-y-0 md:space-x-4 w-auto flex-shrink-0">
                     <div className="flex-shrink-0">
-                        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-gray-200">
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-gray-200">
                             {formData.avatarUrl ? (
                                 <img
                                     src={formData.avatarUrl}
@@ -402,11 +408,11 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <User className="h-10 w-10 text-gray-400" />
+                                <User className="h-8 w-8 md:h-10 md:w-10 text-gray-400" />
                             )}
                         </div>
                     </div>
-                    <div className="flex-1">
+                    <div className="mt-2 md:mt-0">
                         <FileUpload
                             onFileUploaded={handleAvatarUpload}
                             directory="avatars"
@@ -421,13 +427,13 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                 </div>
 
                 {/* 姓名和手机号 */}
-                <div className="flex-1 space-y-2">
-                    <div className="flex items-center">
-                        <span className="text-xl font-bold text-gray-900">
+                <div className="flex-1 space-y-1 md:space-y-2 text-left min-w-0">
+                    <div className="flex items-center justify-start">
+                        <span className="text-lg md:text-xl font-bold text-gray-900">
                             {formData.name || '未填写姓名'}
                         </span>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center justify-start space-x-2">
                         <Phone className="h-4 w-4 text-gray-500" />
                         <span className="text-gray-700 font-medium">
                             {formData.phone || '未填写手机号'}
@@ -437,12 +443,12 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
             </div>
 
             {/* 第一部分：基本信息 (3列布局) */}
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center border-b pb-2">
+            <div className="bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
+                <h3 className="text-base font-semibold text-gray-900 mb-3 md:mb-4 flex items-center border-b pb-2">
                     <User className="h-4 w-4 mr-2 text-blue-600" />
                     基本信息
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                     {/* 性别 */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -451,7 +457,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                         <select
                             value={formData.gender || ''}
                             onChange={(e) => handleChange('gender', e.target.value)}
-                            className="w-full h-9 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         >
                             <option value="">请选择</option>
                             {genderOptions.map(option => (
@@ -469,7 +475,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                         <select
                             value={formData.ethnicity || ''}
                             onChange={(e) => handleChange('ethnicity', e.target.value)}
-                            className="w-full h-9 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="">请选择</option>
                             {(dictData.ethnicity || []).map(option => (
@@ -486,7 +492,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                         <select
                             value={formData.nationality || ''}
                             onChange={(e) => handleChange('nationality', e.target.value)}
-                            className="w-full h-9 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="">请选择</option>
                             {(dictData.nationality || []).map(option => (
@@ -503,7 +509,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                         <select
                             value={formData.politicalStatus || ''}
                             onChange={(e) => handleChange('politicalStatus', e.target.value)}
-                            className="w-full h-9 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="">请选择</option>
                             {(dictData.political_status || []).map(option => (
@@ -520,7 +526,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                         <select
                             value={formData.maritalStatus || ''}
                             onChange={(e) => handleChange('maritalStatus', e.target.value)}
-                            className="w-full h-9 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="">请选择</option>
                             {(dictData.marital_status || []).map(option => (
@@ -540,7 +546,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                                 value={formData.nativePlace || ''}
                                 onClick={() => setIsNativePlaceSelectorOpen(true)}
                                 readOnly
-                                className="w-full h-9 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bg-white"
+                                className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bg-white"
                                 placeholder="请选择"
                             />
                         </div>
@@ -557,7 +563,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                                 value={formData.city || ''}
                                 onClick={() => setIsCitySelectorOpen(true)}
                                 readOnly
-                                className="w-full h-9 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bg-white"
+                                className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bg-white"
                                 placeholder="请选择"
                             />
                         </div>
@@ -571,7 +577,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                         <select
                             value={formData.employmentStatus || ''}
                             onChange={(e) => handleChange('employmentStatus', e.target.value)}
-                            className={`w-full h-9 px-3 py-1.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.employmentStatus ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full px-3 py-1.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.employmentStatus ? 'border-red-500' : 'border-gray-300'
                                 }`}
                         >
                             <option value="">请选择</option>
@@ -590,7 +596,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                         <select
                             value={formData.jobType || ''}
                             onChange={(e) => handleChange('jobType', e.target.value)}
-                            className="w-full h-9 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="">请选择</option>
                             {(dictData.job_type || []).map(option => (
@@ -617,7 +623,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                             <select disabled={true}
                                 value={formData.idType || ''}
                                 onChange={(e) => handleChange('idType', e.target.value)}
-                                className={`w-full h-9 px-3 py-1.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.idType ? 'border-red-500' : 'border-gray-300'
+                                className={`w-full px-3 py-1.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.idType ? 'border-red-500' : 'border-gray-300'
                                     }`}
                             >
                                 <option value="">请选择</option>
@@ -637,7 +643,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                                 type="text"
                                 value={formData.idNumber || ''}
                                 onChange={(e) => handleChange('idNumber', e.target.value)}
-                                className={`w-full h-9 px-3 py-1.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.idNumber ? 'border-red-500' : 'border-gray-300'
+                                className={`w-full px-3 py-1.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.idNumber ? 'border-red-500' : 'border-gray-300'
                                     }`}
                                 placeholder="请输入证件号码"
                             />
