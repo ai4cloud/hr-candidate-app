@@ -215,10 +215,10 @@ export async function POST(
             await tx.hrPersonJobPref.create({
               data: {
                 personId: BigInt(personId),
-                expectedPosition: job.expectedPosition || null,
-                expectedIndustry: job.expectedIndustry || null,
-                expectedCity: job.expectedCity || null,
-                expectedSalary: job.expectedSalary || null,
+                expectedPosition: (job.expectedPosition as string | undefined) ?? null,
+                expectedIndustry: (job.expectedIndustry as string | undefined) ?? null,
+                expectedCity: (job.expectedCity as string | undefined) ?? null,
+                expectedSalary: (job.expectedSalary as string | undefined) ?? null,
                 tenantId: BigInt(getDefaultTenantId()),
                 createTime: new Date(),
                 updateTime: new Date(),
@@ -413,15 +413,15 @@ export async function POST(
           if (project.projectName && project.startDate) {
             await tx.hrPersonProject.create({
               data: {
-                projectName: project.projectName,
-                companyName: project.companyName || null,
-                startDate: new Date(project.startDate),
-                endDate: project.endDate ? new Date(project.endDate) : null,
-                technologies: project.technologies || null,
-                projectDesc: project.projectDesc || null,
-                projectRole: project.projectRole || null,
-                projectResponsibility: project.projectResponsibility || null,
-                projectAchievement: project.projectAchievement || null,
+                projectName: project.projectName as string,
+                companyName: (project.companyName as string | undefined) ?? null,
+                startDate: new Date(project.startDate as string),
+                endDate: project.endDate ? new Date(project.endDate as string) : null,
+                technologies: (project.technologies as string | undefined) ?? null,
+                projectDesc: (project.projectDesc as string | undefined) ?? null,
+                projectRole: (project.projectRole as string | undefined) ?? null,
+                projectResponsibility: (project.projectResponsibility as string | undefined) ?? null,
+                projectAchievement: (project.projectAchievement as string | undefined) ?? null,
                 tenantId: BigInt(getDefaultTenantId()),
                 createTime: new Date(),
                 updateTime: new Date(),
@@ -447,9 +447,9 @@ export async function POST(
           if (skill.skillName) {
             const skillData: Record<string, unknown> = {
               personId: BigInt(personId),
-              skillName: skill.skillName,
-              proficiencyLevel: skill.proficiencyLevel || null,
-              sourceType: skill.sourceType || 'manual',
+              skillName: skill.skillName as string,
+              proficiencyLevel: (skill.proficiencyLevel as string | undefined) ?? null,
+              sourceType: (skill.sourceType as string | undefined) ?? 'manual',
               tenantId: BigInt(getDefaultTenantId()),
               createTime: new Date(),
               updateTime: new Date(),
@@ -491,11 +491,11 @@ export async function POST(
             await tx.hrPersonCertificate.create({
               data: {
                 personId: BigInt(personId),
-                certificateName: cert.certificateName,
-                certificateCode: cert.certificateCode || null,
-                issuer: cert.issuer || null,
-                issueDate: cert.issueDate ? new Date(cert.issueDate) : null,
-                expiryDate: cert.expiryDate ? new Date(cert.expiryDate) : null,
+                certificateName: cert.certificateName as string,
+                certificateCode: (cert.certificateCode as string | undefined) ?? null,
+                issuer: (cert.issuer as string | undefined) ?? null,
+                issueDate: cert.issueDate ? new Date(cert.issueDate as string) : null,
+                expiryDate: cert.expiryDate ? new Date(cert.expiryDate as string) : null,
                 createTime: new Date(),
                 updateTime: new Date(),
                 deleted: false
@@ -519,12 +519,12 @@ export async function POST(
             await tx.hrPersonTraining.create({
               data: {
                 personId: BigInt(personId),
-                trainingName: training.trainingName,
-                startDate: new Date(training.startDate),
-                endDate: new Date(training.endDate),
-                trainingOrg: training.trainingInstitution || null,
-                trainingDesc: training.trainingDescription || null,
-                certificateName: training.certificateObtained || null,
+                trainingName: training.trainingName as string,
+                startDate: new Date(training.startDate as string),
+                endDate: new Date(training.endDate as string),
+                trainingOrg: (training.trainingInstitution as string | undefined) ?? null,
+                trainingDesc: (training.trainingDescription as string | undefined) ?? null,
+                certificateName: (training.certificateObtained as string | undefined) ?? null,
                 createTime: new Date(),
                 updateTime: new Date(),
                 deleted: false
@@ -548,8 +548,8 @@ export async function POST(
             await tx.hrPersonLanguage.create({
               data: {
                 personId: BigInt(personId),
-                languageName: lang.languageName,
-                proficiencyLevel: lang.proficiencyLevel || null,
+                languageName: lang.languageName as string,
+                proficiencyLevel: (lang.proficiencyLevel as string | undefined) ?? null,
                 createTime: new Date(),
                 updateTime: new Date(),
                 deleted: false
