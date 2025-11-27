@@ -27,6 +27,8 @@ pipeline {
         BUILD_DIR = "${WORKSPACE}"
         // PM2 应用名称
         PM2_APP_NAME = "${APP_NAME}-${params.DEPLOY_ENV}"
+        // 防止 Jenkins 构建完成后杀死 PM2 进程
+        JENKINS_NODE_COOKIE = 'dontKillMe'
     }
 
     stages {
