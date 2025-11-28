@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import CitySelector from '@/components/ui/CitySelector'
 import FileUpload from '@/components/FileUpload'
-import { User, FileText, Eye, Download, Upload, Trash2, CreditCard, Phone, MapPin } from 'lucide-react'
+import { User, FileText, Eye, Download, Upload, Trash2, CreditCard, Phone, MapPin, Camera } from 'lucide-react'
 
 // 基本信息数据类型
 export interface BasicInfoData {
@@ -361,6 +361,38 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
         handleChange('avatarUrl', fileUrl)
     }
 
+    // 处理点击头像上传
+    const handleAvatarClick = () => {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = 'image/*'
+        input.onchange = async (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0]
+            if (file) {
+                try {
+                    const formData = new FormData()
+                    formData.append('file', file)
+                    formData.append('directory', 'avatars')
+
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    })
+
+                    const result = await response.json()
+                    if (result.success && result.data?.fileUrl) {
+                        handleAvatarUpload(result.data.fileUrl, result.data.originalName)
+                    } else {
+                        console.error('文件上传失败:', result.error || result.message || '未知错误')
+                    }
+                } catch (error) {
+                    console.error('文件上传失败:', error)
+                }
+            }
+        }
+        input.click()
+    }
+
     // 处理身份证文件上传
     const handleIdCardUpload = (field: 'idCardFrontUrl' | 'idCardBackUrl') => {
         const input = document.createElement('input')
@@ -398,9 +430,10 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
             {/* 头部：头像与核心信息 */}
             <div className="flex flex-row items-start space-x-4 md:space-x-6 bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
                 {/* 头像上传区域 */}
+
                 <div className="flex flex-col md:flex-row items-center md:items-center space-y-2 md:space-y-0 md:space-x-4 w-auto flex-shrink-0">
-                    <div className="flex-shrink-0">
-                        <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-gray-200">
+                    <div className="flex-shrink-0 relative group cursor-pointer" onClick={() => handleAvatarClick()}>
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-gray-200 relative">
                             {formData.avatarUrl ? (
                                 <img
                                     src={formData.avatarUrl}
@@ -410,19 +443,12 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
                             ) : (
                                 <User className="h-8 w-8 md:h-10 md:w-10 text-gray-400" />
                             )}
+
+                            {/* 悬停遮罩 */}
+                            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <Camera className="h-6 w-6 text-white" />
+                            </div>
                         </div>
-                    </div>
-                    <div className="mt-2 md:mt-0">
-                        <FileUpload
-                            onFileUploaded={handleAvatarUpload}
-                            directory="avatars"
-                            accept="image/*"
-                            maxSize={5}
-                            placeholder="上传头像"
-                            currentFile={formData.avatarUrl}
-                            variant="compact"
-                            hideFileInfo={true}
-                        />
                     </div>
                 </div>
 
