@@ -428,7 +428,7 @@ export default function BasicInfoForm({ data, onChange, onValidationChange }: Ba
     return (
         <div className="space-y-3 md:space-y-4">
             {/* 头部：头像与核心信息 */}
-            <div className="flex flex-row items-start space-x-4 md:space-x-6 bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
+            <div className="flex flex-row items-center space-x-4 md:space-x-6 bg-white p-3 md:p-4 rounded-lg border border-gray-200 shadow-sm">
                 {/* 头像上传区域 */}
 
                 <div className="flex flex-col md:flex-row items-center md:items-center space-y-2 md:space-y-0 md:space-x-4 w-auto flex-shrink-0">
