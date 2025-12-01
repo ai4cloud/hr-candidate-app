@@ -5,9 +5,16 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const code = searchParams.get('code')
 
+    // 获取正确的 host（从 headers 或 URL）
+    const host = request.headers.get('host') || request.nextUrl.host
+    const protocol = host.includes('localhost') ? 'http' : 'https'
+    const baseUrl = `${protocol}://${host}`
+
     console.log('[WeChat Callback] Received request:', {
         code: code ? `${code.substring(0, 10)}...` : null,
-        url: request.url
+        url: request.url,
+        host,
+        baseUrl
     })
 
     if (!code) {
@@ -80,17 +87,17 @@ export async function GET(request: NextRequest) {
             }
 
             // 重定向到填写页面
-            const redirectUrl = `/resume-wizard/${token}/form`
+            const redirectUrl = `${baseUrl}/resume-wizard/${token}/form`
             console.log('[WeChat Callback] Redirecting to:', redirectUrl)
-            return NextResponse.redirect(new URL(redirectUrl, request.url))
+            return NextResponse.redirect(redirectUrl)
 
         } else {
             console.log('[WeChat Callback] Person not found, redirecting to bind page')
             // 3.2 未绑定：跳转到绑定页面
             // 携带 openid 参数
-            const bindUrl = `/resume-wizard/bind?openid=${openid}`
+            const bindUrl = `${baseUrl}/resume-wizard/bind?openid=${openid}`
             console.log('[WeChat Callback] Redirecting to:', bindUrl)
-            return NextResponse.redirect(new URL(bindUrl, request.url))
+            return NextResponse.redirect(bindUrl)
         }
 
     } catch (error) {
