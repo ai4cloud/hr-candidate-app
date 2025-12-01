@@ -66,6 +66,7 @@ model HrPerson {
   idNumber              String?   @map("id_number") @db.VarChar(50)
   phone                 String?   @db.VarChar(20)
   wechat                String?   @db.VarChar(50)
+  wechat_openid         String?   @db.VarChar(100)
   email                 String?   @db.VarChar(100)
   city                  String?   @db.VarChar(20)
   nativePlace           String?   @map("native_place") @db.VarChar(50)
