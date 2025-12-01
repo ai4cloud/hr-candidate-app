@@ -77,7 +77,9 @@ pipeline {
                         string(credentialsId: "oauth2-username-${params.DEPLOY_ENV}", variable: 'OAUTH2_USERNAME'),
                         string(credentialsId: "oauth2-password-${params.DEPLOY_ENV}", variable: 'OAUTH2_PASSWORD'),
                         string(credentialsId: "admin-service-base-url-${params.DEPLOY_ENV}", variable: 'ADMIN_SERVICE_BASE_URL'),
-                        string(credentialsId: "tenant-id-${params.DEPLOY_ENV}", variable: 'TENANT_ID')
+                        string(credentialsId: "tenant-id-${params.DEPLOY_ENV}", variable: 'TENANT_ID'),
+                        string(credentialsId: "wechat-app-id-${params.DEPLOY_ENV}", variable: 'WECHAT_APP_ID'),
+                        string(credentialsId: "wechat-app-secret-${params.DEPLOY_ENV}", variable: 'WECHAT_APP_SECRET')
                     ]) {
                         // 生成 .env 文件
                         sh """
@@ -99,6 +101,10 @@ ADMIN_SERVICE_BASE_URL="${ADMIN_SERVICE_BASE_URL}"
 
 # 多租户配置
 TENANT_ID="${TENANT_ID}"
+
+# 微信配置
+WECHAT_APP_ID="${WECHAT_APP_ID}"
+WECHAT_APP_SECRET="${WECHAT_APP_SECRET}"
 
 # 应用配置
 NEXT_PUBLIC_APP_NAME="候选人简历填写系统"
