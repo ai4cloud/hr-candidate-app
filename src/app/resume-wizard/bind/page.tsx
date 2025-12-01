@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 function BindForm() {
@@ -11,18 +11,27 @@ function BindForm() {
     const searchParams = useSearchParams()
     const openid = searchParams.get('openid')
 
+    useEffect(() => {
+        console.log('[Bind Page] Component mounted')
+        console.log('[Bind Page] OpenID:', openid ? `${openid.substring(0, 10)}...` : 'null')
+    }, [openid])
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
         setError('')
 
+        console.log('[Bind Page] Submitting form, phone:', phone)
+
         if (!openid) {
+            console.error('[Bind Page] Missing OpenID')
             setError('缺少微信授权信息，请重新从微信菜单进入')
             setLoading(false)
             return
         }
 
         try {
+            console.log('[Bind Page] Calling /api/auth/bind')
             const response = await fetch('/api/auth/bind', {
                 method: 'POST',
                 headers: {
@@ -32,8 +41,10 @@ function BindForm() {
             })
 
             const data = await response.json()
+            console.log('[Bind Page] Response:', { ok: response.ok, status: response.status, data })
 
             if (response.ok) {
+                console.log('[Bind Page] Bind successful, redirecting to form')
                 // 绑定成功，保存用户信息
                 sessionStorage.setItem('personId', data.personId)
                 sessionStorage.setItem('recordStatus', data.recordStatus)
@@ -41,10 +52,11 @@ function BindForm() {
                 // 跳转到填写页面
                 router.push(`/resume-wizard/${data.token}/form`)
             } else {
+                console.error('[Bind Page] Bind failed:', data)
                 setError(data.message || '绑定失败')
             }
         } catch (error) {
-            console.error('绑定请求失败:', error)
+            console.error('[Bind Page] Request error:', error)
             setError('网络连接异常，请检查网络连接后重试。')
         } finally {
             setLoading(false)
@@ -95,7 +107,7 @@ function BindForm() {
                                 disabled={loading}
                                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {loading ? '验证并绑定' : '验证并绑定'}
+                                {loading ? '验证并绑定中...' : '验证并绑定'}
                             </button>
                         </div>
                     </form>
@@ -112,8 +124,16 @@ function BindForm() {
 }
 
 export default function BindPage() {
+    console.log('[Bind Page] Rendering BindPage wrapper')
+
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-lg font-medium text-gray-900">加载中...</div>
+                </div>
+            </div>
+        }>
             <BindForm />
         </Suspense>
     )
