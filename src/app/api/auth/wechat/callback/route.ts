@@ -4,7 +4,6 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const code = searchParams.get('code')
-    const state = searchParams.get('state')
 
     if (!code) {
         return NextResponse.json(
@@ -57,7 +56,7 @@ export async function GET(request: NextRequest) {
             // 但我们需要一个 token。如果 person.recordAccessToken 存在且有效，可以使用它
             // 或者我们需要生成一个新的 token (但这需要引入 crypto 库)
 
-            let token = person.recordAccessToken
+            const token = person.recordAccessToken
 
             // 如果没有 token，这可能是一个异常情况，或者我们需要生成一个
             // 这里假设 recordAccessToken 总是存在的，因为它是录入时生成的
