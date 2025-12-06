@@ -5,7 +5,13 @@ export async function POST(request: NextRequest) {
     try {
         const { phone, openid } = await request.json()
 
+        console.log('[Bind API] Received request:', {
+            phone,
+            openid: openid ? `${openid.substring(0, 10)}...` : null
+        })
+
         if (!phone || !openid) {
+            console.error('[Bind API] Missing parameters')
             return NextResponse.json(
                 { error: '缺少必要参数' },
                 { status: 400 }
@@ -13,6 +19,7 @@ export async function POST(request: NextRequest) {
         }
 
         // 1. 查找手机号对应的候选人
+        console.log('[Bind API] Looking up person by phone:', phone)
         const person = await prisma.hrPerson.findFirst({
             where: {
                 phone: phone,
@@ -21,21 +28,24 @@ export async function POST(request: NextRequest) {
         })
 
         if (!person) {
+            console.error('[Bind API] Person not found for phone:', phone)
             return NextResponse.json(
                 {
                     error: '候选人不存在',
-                    message: '该手机号尚未被HR录入，请联系HR。'
+                    message: '该手机号尚未被HR录入,请联系HR。'
                 },
                 { status: 404 }
             )
         }
 
+        console.log('[Bind API] Person found:', {
+            id: person.id.toString(),
+            currentOpenId: person.wechat_openid ? `${person.wechat_openid.substring(0, 10)}...` : null
+        })
+
         // 2. 检查该候选人是否已经绑定了其他微信
         if (person.wechat_openid && person.wechat_openid !== openid) {
-            // 策略：允许覆盖绑定？还是提示已绑定？
-            // 需求文档未明确，但通常允许重新绑定，或者提示。
-            // 这里假设允许重新绑定，或者这是同一个人换了微信号。
-            console.log(`候选人 ${person.id} 更新微信绑定: ${person.wechat_openid} -> ${openid}`)
+            console.log(`[Bind API] Updating WeChat binding for person ${person.id}: ${person.wechat_openid} -> ${openid}`)
         }
 
         // 3. 检查该微信号是否已经绑定了其他人
@@ -50,6 +60,7 @@ export async function POST(request: NextRequest) {
         })
 
         if (existingBind) {
+            console.error('[Bind API] OpenID already bound to another person:', existingBind.id.toString())
             return NextResponse.json(
                 {
                     error: '微信已绑定',
@@ -60,12 +71,22 @@ export async function POST(request: NextRequest) {
         }
 
         // 4. 执行绑定
-        await prisma.hrPerson.update({
+        console.log('[Bind API] Updating person with OpenID:', {
+            personId: person.id.toString(),
+            openid: `${openid.substring(0, 10)}...`
+        })
+
+        const updatedPerson = await prisma.hrPerson.update({
             where: { id: person.id },
             data: {
                 wechat_openid: openid,
                 updateTime: new Date()
             }
+        })
+
+        console.log('[Bind API] Bind successful:', {
+            personId: updatedPerson.id.toString(),
+            wechatOpenId: updatedPerson.wechat_openid ? `${updatedPerson.wechat_openid.substring(0, 10)}...` : null
         })
 
         // 5. 返回成功及跳转Token
@@ -77,7 +98,10 @@ export async function POST(request: NextRequest) {
         })
 
     } catch (error) {
-        console.error('绑定失败:', error)
+        console.error('[Bind API] Error:', error)
+        if (error instanceof Error) {
+            console.error('[Bind API] Error stack:', error.stack)
+        }
         return NextResponse.json(
             {
                 error: '绑定失败',
