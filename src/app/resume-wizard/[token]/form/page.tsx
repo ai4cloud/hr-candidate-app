@@ -64,12 +64,38 @@ export default function FormPage() {
 
         // 检查是否有有效的session
         const savedPersonId = sessionStorage.getItem('personId')
+
         if (savedPersonId) {
           // 从数据库加载候选人完整信息
           await loadPersonData(savedPersonId)
         } else {
-          // 如果没有保存的用户信息，重定向到登录页
-          router.push(`/resume-wizard/${encodeURIComponent(token)}`)
+          // 尝试使用Token自动登录
+          console.log('Session不存在，尝试使用Token自动登录...')
+          try {
+            const loginResponse = await fetch('/api/auth/token-login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token })
+            })
+
+            const loginResult = await loginResponse.json()
+
+            if (loginResponse.ok && loginResult.success) {
+              console.log('Token自动登录成功:', loginResult.personId)
+              sessionStorage.setItem('personId', loginResult.personId)
+              sessionStorage.setItem('recordStatus', loginResult.recordStatus)
+
+              // 登录成功后加载数据
+              await loadPersonData(loginResult.personId)
+            } else {
+              console.warn('Token自动登录失败:', loginResult)
+              // 登录失败，重定向到手动登录页
+              router.push(`/resume-wizard/${encodeURIComponent(token)}`)
+            }
+          } catch (loginError) {
+            console.error('Token自动登录异常:', loginError)
+            router.push(`/resume-wizard/${encodeURIComponent(token)}`)
+          }
         }
       } catch (error) {
         console.error('初始化失败:', error)
